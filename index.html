@@ -1,1050 +1,1032 @@
 <!DOCTYPE html>
 <html lang="de" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Olympiade - Casino Edition</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        gold: '#d4af37',
-                        'gold-light': '#f3e5ab',
-                        'gold-dark': '#aa820a',
-                        casino: '#0b0c10',
-                        'casino-card': '#1f2833',
-                        felt: '#075e54',
-                        'felt-dark': '#043932',
-                        accent: '#c5a059',
-                        crimson: '#8b0000',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaming Olympiade - Casino Edition</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            casino: {
+              gold: '#F59E0B',
+              goldHover: '#D97706',
+              dark: '#0F172A',
+              card: '#1E293B',
+              accent: '#10B981',
+              danger: '#EF4444',
+              purple: '#8B5CF6'
             }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
         }
-    </script>
-    <!-- FontAwesome & Google Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+      }
+    }
+  </script>
+
+  <!-- Google Font & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Tone.js for Sound Effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+    }
     
-    <style>
-        body {
-            background-color: #0b0c10;
-            color: #c5a059;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-        .font-cinzel {
-            font-family: 'Cinzel', serif;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b0c10;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d4af37;
-            border-radius: 4px;
-        }
-        /* Golden Glow Effect */
-        .gold-glow {
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-        }
-        .gold-glow-lg {
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
-        }
-        .red-glow {
-            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
-        }
-        /* Casino Slot Wheel Reel Animation */
-        @keyframes reelSpin {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-1000px); }
-        }
-        .spinning-reel {
-            animation: reelSpin 0.15s linear infinite;
-        }
-        /* Quiz Blur/Pixel Filters */
-        .filter-blur { filter: blur(20px); }
-        .filter-pixel { filter: contrast(200%) brightness(80%) blur(8px); }
-        .filter-glitch { filter: hue-rotate(90deg) invert(30%); }
-    </style>
+    .gold-glow {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #FFF 0%, #F59E0B 50%, #B45309 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .avatar-option:hover {
+      transform: scale(1.08);
+      border-color: #F59E0B;
+    }
+
+    .avatar-selected {
+      border-color: #F59E0B !important;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      transform: scale(1.05);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f59e0b;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-animation {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+  </style>
 </head>
-<body class="bg-casino text-gray-200 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 flex flex-col min-h-screen">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-casino-card border-b-2 border-gold/40 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xl">
-        <div class="flex items-center space-x-3">
-            <i class="fa-solid font-cinzel text-gold text-2xl">🎰</i>
-            <h1 class="font-cinzel text-xl md:text-2xl font-bold tracking-wider text-gold drop-shadow-md">
-                GAMING OLYMPIADE <span class="text-xs text-red-500 font-sans font-normal uppercase border border-red-500/50 px-2 py-0.5 rounded ml-2">Casino Edition</span>
-            </h1>
+  <!-- ENTRY / ROLE SELECTION MODAL -->
+  <div id="entryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="glass-card max-w-xl w-full rounded-2xl p-6 md:p-8 border border-amber-500/40 shadow-2xl relative text-center">
+      
+      <div class="mb-6">
+        <span class="text-5xl">🎰</span>
+        <h1 class="text-3xl font-black gold-gradient-text uppercase tracking-wider mt-2">Gaming Olympiade</h1>
+        <p class="text-slate-400 text-sm mt-1">Willkommen zur Casino Edition! Bitte wähle deine Rolle.</p>
+      </div>
+
+      <!-- Mode Selector Buttons -->
+      <div id="modeSelector" class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+        <button onclick="selectEntryMode('host')" class="p-6 rounded-xl bg-gradient-to-br from-amber-600/30 to-amber-900/40 border border-amber-500/50 hover:border-amber-400 hover:scale-105 transition duration-200 flex flex-col items-center gap-3 group">
+          <i class="fa-solid me-0 fa-user-shield text-4xl text-amber-400 group-hover:scale-110 transition"></i>
+          <div>
+            <div class="font-bold text-lg text-amber-200">Als Host betreten</div>
+            <div class="text-xs text-slate-400">Vollzugriff, Regie, Punkte & Raddrehung</div>
+          </div>
+        </button>
+
+        <button onclick="selectEntryMode('participant')" class="p-6 rounded-xl bg-gradient-to-br from-emerald-600/30 to-teal-900/40 border border-emerald-500/50 hover:border-emerald-400 hover:scale-105 transition duration-200 flex flex-col items-center gap-3 group">
+          <i class="fa-solid me-0 fa-gamepad text-4xl text-emerald-400 group-hover:scale-110 transition"></i>
+          <div>
+            <div class="font-bold text-lg text-emerald-200">Als Teilnehmer betreten</div>
+            <div class="text-xs text-slate-400">Avatar wählen, Joker setzen & Buzzern</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Host PIN Form (Hidden initially) -->
+      <div id="hostPinSection" class="hidden flex-col items-center gap-4">
+        <div class="text-amber-400 font-semibold"><i class="fa-solid fa-lock mr-2"></i> Host PIN erforderlich</div>
+        <input type="password" id="hostPinInput" maxlength="4" placeholder="PIN eingeben" class="w-48 text-center text-2xl tracking-widest bg-slate-800 border-2 border-amber-500/50 rounded-xl px-4 py-2 focus:outline-none focus:border-amber-400 text-amber-300 font-mono">
+        <p id="pinError" class="text-xs text-red-400 hidden">Falscher PIN! Versuche es erneut. (Tipp: 1234)</p>
+        <div class="flex gap-2 w-full justify-center mt-2">
+          <button onclick="resetEntryMode()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm">Zurück</button>
+          <button onclick="verifyHostPin()" class="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm">Einloggen</button>
+        </div>
+      </div>
+
+      <!-- Participant Profile Setup (Hidden initially) -->
+      <div id="participantSetupSection" class="hidden flex-col items-center gap-4 text-left">
+        <div class="w-full">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Dein Spielername</label>
+          <input type="text" id="playerNameInput" placeholder="Name eingeben..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-slate-100 focus:outline-none focus:border-emerald-500">
         </div>
 
-        <div class="flex items-center space-x-2 md:space-x-4">
-            <!-- Game Phase Tracker -->
-            <div id="phaseIndicator" class="hidden md:flex items-center bg-black/50 border border-gold/30 px-3 py-1 rounded-full text-xs font-semibold text-gold">
-                <span>Runde: <span id="currentRoundDisplay" class="text-white text-sm">1</span> / 10</span>
-            </div>
-
-            <!-- Legend & Rules Button -->
-            <button onclick="toggleModal('legendModal')" class="bg-gold/10 hover:bg-gold/20 text-gold border border-gold/50 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5">
-                <i class="fa-solid fa-book-open"></i> <span class="hidden sm:inline">Joker-Legende</span>
-            </button>
-
-            <!-- Host Login/Console Toggle Button -->
-            <button id="hostBtn" onclick="openHostAuth()" class="bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-600/50 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5">
-                <i class="fa-solid fa-user-shield"></i> <span id="hostBtnText">Host Admin</span>
-            </button>
+        <div class="w-full">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Wähle deinen SpongeBob Fisch Avatar (1-25)</label>
+          <div id="avatarGrid" class="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-900/60 rounded-xl border border-slate-800">
+            <!-- 25 SpongeBob Avatars generated via JS -->
+          </div>
         </div>
-    </header>
 
-    <!-- MAIN APP CONTAINER -->
-    <main class="flex-grow container mx-auto px-2 sm:px-4 py-6 max-w-7xl">
-
-        <!-- VIEW 1: PLAYER SETUP & AVATAR SELECTION -->
-        <section id="setupView" class="block max-w-4xl mx-auto">
-            <div class="bg-casino-card border-2 border-gold/40 rounded-2xl p-6 sm:p-8 shadow-2xl gold-glow relative overflow-hidden">
-                <div class="text-center mb-8">
-                    <h2 class="font-cinzel text-3xl font-extrabold text-gold tracking-wide">SPIELER REGISTRIERUNG</h2>
-                    <p class="text-gray-400 text-sm mt-1">Wählt eure Namen und wählt einen originalen SpongeBob-Fisch-Avatar!</p>
-                </div>
-
-                <!-- 4 Players Form Grid -->
-                <div id="playerInputsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Player Cards inserted dynamically via JS -->
-                </div>
-
-                <div class="mt-8 text-center">
-                    <button onclick="confirmPlayersAndStart()" class="bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-extrabold text-lg px-8 py-3.5 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all">
-                        <i class="fa-solid fa-dice-five mr-2"></i> OLYMPIADE STARTEN
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 2: MAIN DASHBOARD & WHEEL OF FORTUNE -->
-        <section id="dashboardView" class="hidden space-y-8">
-            
-            <!-- Leaderboard Header Banner -->
-            <div class="bg-casino-card border border-gold/30 rounded-2xl p-4 shadow-lg">
-                <h3 class="font-cinzel text-lg font-bold text-gold mb-3 text-center flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-trophy text-gold"></i> GEGENWÄRTIGER PUNKTESTAND
-                </h3>
-                <div id="leaderboardCards" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <!-- Dynamic Player Cards with Avatar, Score & Jokers -->
-                </div>
-            </div>
-
-            <!-- Wheel Section + Setup Board Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                <!-- Left: Interactive Setup Board (Manage Games) -->
-                <div class="lg:col-span-4 bg-casino-card border border-gold/30 rounded-2xl p-5 shadow-xl space-y-4">
-                    <div class="flex justify-between items-center border-b border-gold/20 pb-3">
-                        <h3 class="font-cinzel text-base font-bold text-gold flex items-center gap-2">
-                            <i class="fa-solid fa-list-check"></i> Spiele-Setup Board
-                        </h3>
-                        <span id="activeGameCount" class="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-bold">10 Aktiv</span>
-                    </div>
-
-                    <p class="text-xs text-gray-400">
-                        🟢 = Ausgleichs-Joker möglich<br>
-                        🔴 = KEIN Ausgleichs-Joker (Pure Skill)
-                    </p>
-
-                    <!-- Scrollable Games List -->
-                    <div id="setupBoardList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                        <!-- Dynamic Games List inserted JS -->
-                    </div>
-                </div>
-
-                <!-- Right: The Wheel Canvas & Controls -->
-                <div class="lg:col-span-8 bg-casino-card border-2 border-gold/40 rounded-2xl p-6 shadow-xl text-center flex flex-col items-center justify-center relative min-h-[480px]">
-                    <h3 class="font-cinzel text-xl font-bold text-gold mb-2">DAS CASINO GLÜCKSRAD</h3>
-                    <p class="text-xs text-gray-400 mb-4">Dreht das Rad, um das nächste Olympiade-Spiel zu bestimmen!</p>
-
-                    <!-- Wheel Canvas Container -->
-                    <div class="relative flex justify-center items-center my-2">
-                        <!-- Pointer Arrow -->
-                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20 text-red-600 text-3xl drop-shadow-md">
-                            <i class="fa-solid fa-location-pin"></i>
-                        </div>
-                        <canvas id="wheelCanvas" width="380" height="380" class="max-w-full h-auto drop-shadow-2xl rounded-full border-4 border-gold/60"></canvas>
-                    </div>
-
-                    <!-- Spin Button -->
-                    <button id="spinBtn" onclick="spinWheel()" class="mt-6 bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white font-extrabold text-lg px-10 py-3.5 rounded-xl shadow-xl hover:scale-105 active:scale-95 border border-red-400/50 transition-all">
-                        <i class="fa-solid fa-arrows-spin mr-2"></i> RAD DREHEN!
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 3: SECRET JOKER PHASE (20-SEC TIMER) -->
-        <section id="jokerPhaseView" class="hidden max-w-4xl mx-auto">
-            <div class="bg-casino-card border-2 border-gold rounded-2xl p-6 sm:p-8 shadow-2xl gold-glow text-center space-y-6">
-                
-                <div class="border-b border-gold/30 pb-4">
-                    <span class="text-xs uppercase tracking-widest text-red-500 font-extrabold">Geheime Wahl</span>
-                    <h2 class="font-cinzel text-3xl font-black text-gold mt-1" id="jokerPhaseGameTitle">SPIELNAME</h2>
-                    <div id="jokerBadgeStatus" class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold"></div>
-                </div>
-
-                <!-- 20s Countdown Timer -->
-                <div class="flex justify-center items-center space-x-3">
-                    <div class="text-sm font-semibold text-gray-300">Aktion verfällt in:</div>
-                    <div id="jokerTimerDisplay" class="text-4xl font-black font-mono text-red-500 bg-black/60 border border-red-500/40 px-4 py-1 rounded-xl shadow-inner">20</div>
-                    <div class="text-sm font-semibold text-gray-300">Sekunden</div>
-                </div>
-
-                <!-- Player Secret Joker Action Cards -->
-                <div id="jokerPlayerCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                    <!-- Dynamic Player Joker Selection Cards -->
-                </div>
-
-                <div class="pt-4">
-                    <button onclick="finishJokerPhase()" class="bg-gold text-black font-extrabold px-8 py-3 rounded-xl hover:bg-gold-light transition-all shadow-lg">
-                        <i class="fa-solid fa-play mr-2"></i> WEITER ZUM SPIEL
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 4: MINIGAME ARENA (DYNAMIC FOR ALL GAMES) -->
-        <section id="minigameArenaView" class="hidden max-w-5xl mx-auto space-y-6">
-            <div class="bg-casino-card border-2 border-gold/50 rounded-2xl p-6 shadow-2xl space-y-6">
-                
-                <!-- Game Header Bar -->
-                <div class="flex flex-col md:flex-row justify-between items-center border-b border-gold/30 pb-4 gap-4">
-                    <div>
-                        <h2 id="arenaGameTitle" class="font-cinzel text-3xl font-black text-gold">MINIGAME TITLE</h2>
-                        <p id="arenaGameSubtitle" class="text-xs text-gray-400">Erfasst eure Platzierungen oder nutzt interaktive Tools.</p>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-3">
-                        <button onclick="cancelAndSkipGame()" class="bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-500/50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
-                            <i class="fa-solid fa-forward"></i> Spiel Skippen
-                        </button>
-                        <button onclick="openHostConsole()" class="bg-gold/10 hover:bg-gold/20 text-gold border border-gold/40 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
-                            <i class="fa-solid fa-sliders"></i> Host Controls
-                        </button>
-                    </div>
-                </div>
-
-                <!-- DYNAMIC GAME CONTAINER (Minecraft Slot, Golf Slot, Quiz Engine, etc.) -->
-                <div id="dynamicGameContainer" class="min-h-[300px] flex flex-col justify-center items-center">
-                    <!-- Injected dynamically via JS depending on game -->
-                </div>
-
-                <!-- END OF MATCH SCORE INPUT BOARD -->
-                <div class="border-t border-gold/30 pt-6 space-y-4">
-                    <h3 class="font-cinzel text-lg font-bold text-gold text-center">RUNDEN-ERGEBNIS EINTRAGEN</h3>
-                    <p class="text-xs text-gray-400 text-center">Punkteverteilung: 1. Platz = 5 Pkt. | 2. Platz = 3 Pkt. | 3. Platz = 2 Pkt. | 4. Platz = 1 Pkt.</p>
-                    
-                    <div id="arenaScoreInputs" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <!-- Score Dropdowns / Inputs per Player -->
-                    </div>
-
-                    <div class="text-center pt-2">
-                        <button onclick="submitGameScores()" class="bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-black text-lg px-10 py-3 rounded-xl shadow-xl hover:scale-105 active:scale-95 transition-all">
-                            <i class="fa-solid fa-check-circle mr-2"></i> PUNKTE SPEICHERN & WEITER
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 5: HALBZEIT-ROULETTE (AFTER GAME 5) -->
-        <section id="rouletteView" class="hidden max-w-5xl mx-auto space-y-6">
-            <div class="bg-felt-dark border-4 border-gold rounded-3xl p-6 sm:p-8 shadow-2xl gold-glow text-center space-y-6 relative overflow-hidden">
-                
-                <div class="border-b border-gold/40 pb-4">
-                    <span class="text-xs uppercase tracking-widest text-gold font-extrabold">Halbzeit Spektakel</span>
-                    <h2 class="font-cinzel text-4xl font-black text-gold mt-1">🎰 DAS HALBZEIT-ROULETTE 🎰</h2>
-                    <p class="text-sm text-gray-300 mt-1">Setzt 0, 1, 2 oder 3 eurer hart erarbeiteten Punkte und verdoppelt, verdreifacht oder knackt den Jackpot!</p>
-                </div>
-
-                <!-- Player Wager Cards -->
-                <div id="roulettePlayerWagers" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
-                    <!-- Player Betting Cards Dynamic -->
-                </div>
-
-                <!-- Animated Roulette Wheel Visual -->
-                <div class="bg-black/50 border-2 border-gold/60 rounded-2xl p-6 max-w-md mx-auto flex flex-col items-center justify-center space-y-4">
-                    <div id="rouletteWheelDisplay" class="w-48 h-48 rounded-full border-8 border-gold bg-red-900 flex items-center justify-center font-cinzel font-black text-3xl text-gold shadow-2xl transition-all duration-[4000ms] transform">
-                        <span id="rouletteNumberResult">?</span>
-                    </div>
-                    <div id="rouletteStatusText" class="text-sm font-semibold text-gold-light">Wartet auf Wetteinsätze...</div>
-                </div>
-
-                <div class="flex justify-center gap-4">
-                    <button id="spinRouletteBtn" onclick="spinRouletteWheel()" class="bg-gradient-to-r from-red-600 to-red-800 text-white font-black text-lg px-8 py-3 rounded-xl shadow-xl hover:scale-105 active:scale-95 transition-all">
-                        <i class="fa-solid fa-dharmachakra mr-2"></i> ROULETTE DREHEN!
-                    </button>
-                    <button id="finishRouletteBtn" onclick="finishRoulettePhase()" class="hidden bg-gold text-black font-black text-lg px-8 py-3 rounded-xl shadow-xl hover:scale-105 transition-all">
-                        WEITER ZUR 2. HÄLFTE <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- MODAL 1: JOKER LEGEND & RULES -->
-    <div id="legendModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-casino-card border-2 border-gold rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative space-y-6">
-            <button onclick="toggleModal('legendModal')" class="absolute top-4 right-4 text-gold hover:text-white text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h3 class="font-cinzel text-2xl font-bold text-gold text-center border-b border-gold/30 pb-3">
-                📖 REGEL- & JOKER-LEGENDE
-            </h3>
-
-            <!-- Joker Types Explanation -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
-                <div class="bg-black/40 p-4 rounded-xl border border-gold/30 space-y-2">
-                    <h4 class="font-bold text-gold flex items-center gap-2">
-                        <i class="fa-solid fa-bolt text-yellow-400"></i> High-Stakes Joker (5/4/2 Pkt.)
-                    </h4>
-                    <p class="text-gray-300">
-                        Bei **ALLEN 10 Spielen** verfügbar! Verdoppelt das Risiko:
-                        <br>• 1. Platz = 5 Pkt.
-                        <br>• 2. Platz = 4 Pkt.
-                        <br>• 3. Platz = 2 Pkt.
-                        <br>• 4. Platz = 0 Pkt.
-                    </p>
-                </div>
-
-                <div class="bg-black/40 p-4 rounded-xl border border-green-500/30 space-y-2">
-                    <h4 class="font-bold text-green-400 flex items-center gap-2">
-                        <i class="fa-solid fa-scale-balanced"></i> Ausgleichs-Joker (Gleichheit)
-                    </h4>
-                    <p class="text-gray-300">
-                        NUR bei Spielen mit 🟢 Symbol verfügbar. Gewährt schwächeren Spielern individuelle In-Game Vorteile oder Comeback-Mechaniken!
-                    </p>
-                </div>
-            </div>
-
-            <!-- Per Game Detailed Table -->
-            <div class="space-y-3">
-                <h4 class="font-cinzel text-base font-bold text-gold">Übersicht der 10 Olympiade-Spiele:</h4>
-                <div class="space-y-2 text-xs">
-                    <div class="p-3 bg-black/40 rounded-lg border border-gold/20">
-                        <strong class="text-green-400">🟢 1. Minecraft:</strong> 40m Timer & Erz-Slot Machine advantage (gratis Spins oder Erz-Garantie).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-gold/20">
-                        <strong class="text-green-400">🟢 2. Golf With Your Friends:</strong> Abzugs-Slot zieht extra Schläge (-3 Schläge) vom Endergebnis ab.
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-gold/20">
-                        <strong class="text-green-400">🟢 3. Buckshot Roulette:</strong> Patrone stornieren oder freie Runden-Wiederholung (Reroll).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-gold/20">
-                        <strong class="text-green-400">🟢 4. Personen Erkennen:</strong> 3-Optionen Filter (streicht dauerhaft 2 falsche Optionen von 5).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-gold/20">
-                        <strong class="text-green-400">🟢 5. SpeedRunners:</strong> 1v1 Showdown (+3 Pkt. bei Sieg gegen Wunschgegner; Gegner erhält +1 Pkt. bei Verteidigung).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-red-500/20">
-                        <strong class="text-red-400">🔴 6. Guess the Price:</strong> KEIN Ausgleichs-Joker (Ausarbeitung folgt).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-red-500/20">
-                        <strong class="text-red-400">🔴 7. GeoBingo:</strong> KEIN Ausgleichs-Joker (Ausarbeitung folgt).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-red-500/20">
-                        <strong class="text-red-400">🔴 8. Stadt Land Fluss:</strong> KEIN Ausgleichs-Joker (Ausarbeitung folgt).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-red-500/20">
-                        <strong class="text-red-400">🔴 9. Uno:</strong> KEIN Ausgleichs-Joker (Pure Skill).
-                    </div>
-                    <div class="p-3 bg-black/40 rounded-lg border border-red-500/20">
-                        <strong class="text-red-400">🔴 10. Skribbl.io:</strong> KEIN Ausgleichs-Joker (Pure Skill).
-                    </div>
-                </div>
-            </div>
+        <div class="flex gap-2 w-full justify-end mt-4">
+          <button onclick="resetEntryMode()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm">Zurück</button>
+          <button onclick="confirmParticipantLogin()" class="px-6 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm">Lobby Beitreten</button>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOP Persistent Host Status / Navigation Header -->
+  <header class="bg-slate-900/90 border-b border-amber-500/20 px-4 py-3 sticky top-0 z-40 backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="text-2xl">🎰</div>
+      <div>
+        <h1 class="font-extrabold text-amber-400 tracking-wide flex items-center gap-2">
+          GAMING OLYMPIADE 
+          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-normal">Casino Edition</span>
+        </h1>
+        <p class="text-xs text-slate-400" id="roleBadge">Rolle: Gast / Unbekannt</p>
+      </div>
     </div>
 
-    <!-- MODAL 2: HOST ADMIN CONSOLE (PIN 1234) -->
-    <div id="hostConsoleModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-casino-card border-2 border-red-600 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative space-y-6">
-            <button onclick="toggleModal('hostConsoleModal')" class="absolute top-4 right-4 text-red-400 hover:text-white text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <div class="border-b border-red-600/40 pb-3 text-center">
-                <h3 class="font-cinzel text-2xl font-bold text-red-500 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-user-shield"></i> HOST OVERRULE CONSOLE
-                </h3>
-                <p class="text-xs text-gray-400">Authentifiziert als Host (PIN: 1234). Vollständige Kontrolle über das Event.</p>
-            </div>
+    <!-- Right Side Actions & Host Fast Controls -->
+    <div class="flex items-center space-x-3">
+      <!-- Participant Info Badge -->
+      <div id="participantBadge" class="hidden items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+        <img id="myAvatarImg" src="" class="w-6 h-6 rounded-full bg-slate-700 object-cover" />
+        <span id="myPlayerName" class="text-xs font-semibold text-slate-200"></span>
+      </div>
 
-            <!-- Player Jokers & Scores Live Editor -->
-            <div class="space-y-4">
-                <h4 class="font-cinzel text-sm font-bold text-gold">Spieler-Punkte & Joker-Inventar verwalten:</h4>
-                <div id="hostPlayerControlList" class="space-y-3">
-                    <!-- Player Control Cards Dynamic -->
-                </div>
-            </div>
+      <!-- Quick Legend Trigger -->
+      <button onclick="openLegendModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center gap-2">
+        <i class="fa-solid fa-book-open"></i> <span>📖 Joker-Regeln</span>
+      </button>
 
-            <!-- Quick Action Overrules -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button onclick="hostRefundJokers()" class="bg-yellow-900/40 hover:bg-yellow-800/60 border border-yellow-500/50 text-yellow-200 p-3 rounded-xl text-xs font-bold transition-all text-left">
-                    <i class="fa-solid fa-rotate-left text-yellow-400 text-lg block mb-1"></i>
-                    Aktivierte Joker der Runde erstatten
-                </button>
-                <button onclick="cancelAndSkipGame()" class="bg-red-900/40 hover:bg-red-800/60 border border-red-500/50 text-red-200 p-3 rounded-xl text-xs font-bold transition-all text-left">
-                    <i class="fa-solid fa-forward text-red-400 text-lg block mb-1"></i>
-                    Aktuelles Spiel skippen / stornieren
-                </button>
-            </div>
-        </div>
+      <!-- Host-only Quick Control Toolbar -->
+      <div id="hostQuickTools" class="hidden flex items-center space-x-2 bg-amber-950/40 p-1 rounded-xl border border-amber-500/30">
+        <span class="text-xs text-amber-400 font-bold px-2">HOST TOOLS:</span>
+        <button onclick="triggerUndoPhase()" title="Letzte Aktion/Phase Rückgängig" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs border border-slate-600 transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> Undo
+        </button>
+        <button onclick="resetGlobalTimer()" title="Timer zurücksetzen" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs border border-slate-600 transition">
+          <i class="fa-solid fa-clock-rotate-left"></i> Timer Reset
+        </button>
+      </div>
+
+      <button onclick="switchUserRole()" class="text-xs text-slate-400 hover:text-amber-400 underline pl-2">
+        Rolle Wechseln
+      </button>
     </div>
+  </header>
 
-    <!-- JAVASCRIPT APP LOGIC -->
-    <script>
-        // 25 Original SpongeBob Fish Avatars (Fred, Tom, Harold, Scooter, Pearl, etc.)
-        const SPONGEBOB_AVATARS = [
-            { id: 'fred', name: 'Fred (My Leg!)', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#3b82f6"/><path d="M25 40 Q50 20 75 40 Q50 80 25 40 Z" fill="#60a5fa"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/><path d="M50 60 Q60 70 70 60" stroke="black" stroke-width="3" fill="none"/></svg>` },
-            { id: 'tom', name: 'Tom (CHOCOLATE!)', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#84cc16"/><path d="M20 50 Q50 10 80 50 Q50 90 20 50 Z" fill="#a3e635"/><circle cx="60" cy="35" r="8" fill="white"/><circle cx="62" cy="35" r="4" fill="black"/><ellipse cx="50" cy="65" rx="15" ry="8" fill="#7f1d1d"/></svg>` },
-            { id: 'harold', name: 'Harold (Blue Fish)', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#0284c7"/><path d="M15 45 Q50 15 85 45 Q50 85 15 45 Z" fill="#38bdf8"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'scooter', name: 'Scooter (Surfer)', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#eab308"/><path d="M20 40 Q50 20 80 40 Q50 80 20 40 Z" fill="#fde047"/><circle cx="60" cy="35" r="7" fill="white"/><circle cx="62" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'pearl', name: 'Pearl Whale', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#ec4899"/><circle cx="65" cy="35" r="9" fill="white"/><circle cx="67" cy="35" r="4" fill="black"/></svg>` },
-            { id: 'barnacle', name: 'Barnacle Boy', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#ef4444"/><circle cx="60" cy="40" r="6" fill="white"/><circle cx="62" cy="40" r="3" fill="black"/></svg>` },
-            { id: 'plankton', name: 'Plankton', svg: `<svg viewBox="0 0 100 100"><rect x="35" y="20" width="30" height="60" rx="15" fill="#15803d"/><circle cx="50" cy="35" r="10" fill="red"/><circle cx="50" cy="35" r="4" fill="black"/></svg>` },
-            { id: 'karen', name: 'Karen Computer', svg: `<svg viewBox="0 0 100 100"><rect x="20" y="25" width="60" height="50" rx="5" fill="#475569"/><line x1="25" y1="50" x2="75" y2="50" stroke="#22c55e" stroke-width="4"/></svg>` },
-            { id: 'squilliam', name: 'Squilliam Fancyson', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#a855f7"/><rect x="40" y="30" width="20" height="8" rx="2" fill="#581c87"/></svg>` },
-            { id: 'muffincup', name: 'Old Man Jenkins', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#854d0e"/><circle cx="65" cy="40" r="5" fill="white"/><circle cx="66" cy="40" r="2" fill="black"/></svg>` },
-            { id: 'flats', name: 'Flats the Flounder', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#16a34a"/><circle cx="70" cy="30" r="6" fill="white"/><circle cx="72" cy="30" r="3" fill="black"/></svg>` },
-            { id: 'bubblebass', name: 'Bubble Bass', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#65a30d"/><rect x="55" y="30" width="20" height="15" fill="#1e293b"/></svg>` },
-            { id: 'larry', name: 'Larry the Lobster', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#dc2626"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'mrspuff', name: 'Mrs. Puff', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#facc15"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'doodlebob', name: 'DoodleBob', svg: `<svg viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" fill="none" stroke="black" stroke-width="4"/><circle cx="40" cy="40" r="4" fill="black"/><circle cx="60" cy="40" r="4" fill="black"/></svg>` },
-            { id: 'flyingdutchman', name: 'Flying Dutchman', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#15803d"/><circle cx="60" cy="35" r="6" fill="yellow"/><circle cx="61" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'dirtybubble', name: 'Dirty Bubble', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#a855f7" opacity="0.8"/><circle cx="40" cy="40" r="6" fill="white"/><circle cx="60" cy="40" r="6" fill="white"/></svg>` },
-            { id: 'manray', name: 'Man Ray', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#1e3a8a"/><circle cx="60" cy="35" r="6" fill="red"/></svg>` },
-            { id: 'perch', name: 'Perch Perkins', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#d97706"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'hazel', name: 'Hazel Fish', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#f43f5e"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'patterson', name: 'Mr. Lawrence', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#0d9488"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'incidental', name: 'Incidental 41', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#c084fc"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'natter', name: 'Natter Fish', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fb923c"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'nancy', name: 'Nancy Suzy', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#38bdf8"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` },
-            { id: 'shelam', name: 'Nat Peterson', svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#facc15"/><circle cx="65" cy="35" r="7" fill="white"/><circle cx="67" cy="35" r="3" fill="black"/></svg>` }
-        ];
+  <main class="flex-grow container mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        // Master List of 10 Games with 🟢/🔴 Status
-        const MASTER_GAMES = [
-            { id: 'minecraft', name: 'Minecraft', hasBalanceJoker: true, color: '#15803d' },
-            { id: 'golf', name: 'Golf With Your Friends', hasBalanceJoker: true, color: '#0284c7' },
-            { id: 'buckshot', name: 'Buckshot Roulette', hasBalanceJoker: true, color: '#b91c1c' },
-            { id: 'personen', name: 'Personen Erkennen', hasBalanceJoker: true, color: '#a855f7' },
-            { id: 'speedrunners', name: 'SpeedRunners', hasBalanceJoker: true, color: '#d97706' },
-            { id: 'guesstheprice', name: 'Guess the Price', hasBalanceJoker: false, color: '#475569' },
-            { id: 'geobingo', name: 'GeoBingo', hasBalanceJoker: false, color: '#475569' },
-            { id: 'stadtlandfluss', name: 'Stadt Land Fluss', hasBalanceJoker: false, color: '#475569' },
-            { id: 'uno', name: 'Uno', hasBalanceJoker: false, color: '#475569' },
-            { id: 'skribbl', name: 'Skribbl.io', hasBalanceJoker: false, color: '#475569' }
-        ];
+    <!-- LEFT / CENTER COLUMN: Wheel, Current Game & Active Actions (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Current Match & Phase Status Card -->
+      <div class="glass-card rounded-2xl p-5 border border-amber-500/30 relative overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="animate-ping w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+            <h2 class="text-xs uppercase font-bold text-amber-400 tracking-wider" id="gamePhaseTitle">Aktueller Status</h2>
+          </div>
+          <div id="phaseTimer" class="font-mono text-xl font-black text-amber-300 bg-slate-900/80 px-3 py-1 rounded-lg border border-amber-500/20">
+            00:20
+          </div>
+        </div>
 
-        // State Machine
-        let gameState = {
-            players: [
-                { id: 1, name: 'Spieler 1', avatarIdx: 0, score: 0, balanceJokers: 1, highStakesJokers: 1, activeJoker: null },
-                { id: 2, name: 'Spieler 2', avatarIdx: 1, score: 0, balanceJokers: 1, highStakesJokers: 1, activeJoker: null },
-                { id: 3, name: 'Spieler 3', avatarIdx: 2, score: 0, balanceJokers: 1, highStakesJokers: 1, activeJoker: null },
-                { id: 4, name: 'Spieler 4', avatarIdx: 3, score: 0, balanceJokers: 1, highStakesJokers: 1, activeJoker: null },
-            ],
-            activeGames: [...MASTER_GAMES],
-            currentRound: 1,
-            currentGame: null,
-            isHostAuthenticated: false,
-            jokerTimer: 20,
-            jokerInterval: null
-        };
+        <div id="currentMatchInfo" class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="text-2xl font-black text-slate-100" id="currentGameName">Bereit zum Drehen...</div>
+            <p class="text-xs text-slate-400 mt-1" id="currentGameDesc">Der Host kann das Glücksrad drehen, um das nächste Minispiel zu bestimmen.</p>
+          </div>
+          <div id="gameJokerBadgeContainer">
+            <!-- Badge 🟢 or 🔴 inserted dynamically -->
+          </div>
+        </div>
 
-        window.onload = function() {
-            renderPlayerSetup();
-            renderSetupBoard();
-            drawWheel();
-        };
+        <!-- Secret Joker Timer Action Section for Participants/Host -->
+        <div id="jokerActionPanel" class="mt-4 pt-4 border-t border-slate-700/60 hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-300"><i class="fa-solid fa-user-secret text-amber-400 mr-1"></i> Geheime Joker-Phase (20s)</span>
+            <span class="text-xs text-slate-400">Wähle deinen Joker heimlich aus!</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="jokerSelectionButtons">
+            <!-- Dynamically populated buttons based on user selection & game support -->
+          </div>
+        </div>
 
-        function renderPlayerSetup() {
-            const grid = document.getElementById('playerInputsGrid');
-            grid.innerHTML = '';
+        <!-- Interactive Game Element: Buzzer System (For "Personen Erkennen") -->
+        <div id="buzzerPanel" class="mt-4 pt-4 border-t border-slate-700/60 hidden flex flex-col items-center">
+          <span class="text-xs font-bold text-amber-400 mb-2 uppercase tracking-wider">🚨 Speed-Buzzer (Personen Erkennen)</span>
+          <button id="mainBuzzerBtn" onclick="pressBuzzer()" class="w-36 h-36 rounded-full bg-gradient-to-b from-red-500 to-red-800 text-white font-black text-xl shadow-lg border-4 border-red-400 hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center gap-1 group">
+            <i class="fa-solid fa-hand-pointer text-3xl group-hover:animate-bounce"></i>
+            <span>BUZZER</span>
+          </button>
+          <div id="buzzerResult" class="mt-3 text-sm text-center font-bold text-slate-200"></div>
+        </div>
+      </div>
 
-            gameState.players.forEach((p, idx) => {
-                const avatarOptions = SPONGEBOB_AVATARS.map((av, aIdx) => 
-                    `<option value="${aIdx}" ${aIdx === p.avatarIdx ? 'selected' : ''}>${av.name}</option>`
-                ).join('');
+      <!-- CASINO WHEEL CONTAINER -->
+      <div class="glass-card rounded-2xl p-6 border border-amber-500/30 flex flex-col items-center justify-center relative">
+        <div class="relative w-full max-w-[380px] aspect-square flex items-center justify-center">
+          <!-- Wheel Pointer -->
+          <div class="absolute -top-3 z-30 text-amber-400 text-3xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
+            <i class="fa-solid fa-location-pin fa-rotate-180"></i>
+          </div>
+          <canvas id="wheelCanvas" width="400" height="400" class="w-full h-full rounded-full shadow-2xl"></canvas>
+        </div>
 
-                grid.innerHTML += `
-                    <div class="bg-black/40 border border-gold/30 rounded-xl p-4 flex items-center space-x-4">
-                        <div id="avatarPreview_${p.id}" class="w-16 h-16 rounded-full border-2 border-gold bg-casino p-1 flex-shrink-0">
-                            ${SPONGEBOB_AVATARS[p.avatarIdx].svg}
-                        </div>
-                        <div class="flex-grow space-y-2">
-                            <label class="text-xs font-bold text-gold uppercase">Spieler ${p.id} Name</label>
-                            <input type="text" id="playerName_${p.id}" value="${p.name}" class="w-full bg-casino border border-gold/40 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-gold">
-                            <select onchange="updateAvatarPreview(${p.id}, this.value)" class="w-full bg-casino border border-gold/30 rounded-lg px-2 py-1 text-xs text-gray-300">
-                                ${avatarOptions}
-                            </select>
-                        </div>
-                    </div>
-                `;
-            });
+        <!-- Spin Controls (Host Only Access enabled) -->
+        <div class="mt-6 flex flex-wrap justify-center gap-3 w-full">
+          <button id="spinBtn" onclick="spinWheel()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-lg tracking-wider shadow-lg transition transform hover:scale-105 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2">
+            <i class="fa-solid fa-dharmachakra"></i> RAD DREHEN
+          </button>
+        </div>
+        <p id="participantSpinNotice" class="text-xs text-slate-400 mt-2 hidden text-center">
+          <i class="fa-solid fa-lock text-amber-400 mr-1"></i> Nur der Host kann das Glücksrad drehen.
+        </p>
+      </div>
+
+      <!-- HALF-TIME ROULETTE SECTION (Triggers after Game 5) -->
+      <div id="rouletteSection" class="glass-card rounded-2xl p-6 border border-amber-500/40 hidden">
+        <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+          <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-coins"></i> Halbzeit-Roulette (Nach Spiel 5)
+          </h3>
+          <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/40">Einsatz: 0 - 3 Punkte</span>
+        </div>
+        <p class="text-sm text-slate-300 mb-4">Setze deine Punkte vor dem nächsten Spiel! Rot/Schwarz (1:1), Dutzende (2:1) oder Einzelne Zahlen (35:1).</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+            <div class="text-xs font-bold text-slate-400 mb-1">Rot oder Schwarz</div>
+            <div class="flex gap-2">
+              <button onclick="placeRouletteBet('red')" class="flex-1 py-2 rounded bg-red-600 hover:bg-red-500 text-xs font-bold">Rot</button>
+              <button onclick="placeRouletteBet('black')" class="flex-1 py-2 rounded bg-slate-950 hover:bg-slate-900 border border-slate-700 text-xs font-bold">Schwarz</button>
+            </div>
+          </div>
+          <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+            <div class="text-xs font-bold text-slate-400 mb-1">Dutzend (1-12, 13-24, 25-36)</div>
+            <button onclick="placeRouletteBet('dozen')" class="w-full py-2 rounded bg-amber-600 hover:bg-amber-500 text-xs font-bold">Dutzend Wählen</button>
+          </div>
+          <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+            <div class="text-xs font-bold text-slate-400 mb-1">Einzelne Zahl (0-36)</div>
+            <button onclick="placeRouletteBet('single')" class="w-full py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-xs font-bold">Zahl Setzen</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: Scoreboard, Setup List & Controls (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+
+      <!-- LIVE SCOREBOARD CARD -->
+      <div class="glass-card rounded-2xl p-5 border border-amber-500/30">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3 mb-4">
+          <h2 class="text-base font-bold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-trophy"></i> Live-Rangliste & Punkte
+          </h2>
+          <span class="text-xs text-slate-400" id="playerCountLabel">0 Spieler</span>
+        </div>
+
+        <div id="scoreboardList" class="space-y-3">
+          <!-- Dynamically Rendered Players with SpongeBob Avatars -->
+        </div>
+      </div>
+
+      <!-- GAME LIST & SETUP BOARD CARD -->
+      <div class="glass-card rounded-2xl p-5 border border-amber-500/30">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3 mb-3">
+          <h2 class="text-base font-bold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-list-check"></i> Olympiade Spiele (10)
+          </h2>
+          <span class="text-xs text-slate-400">🔴 / 🟢 Joker Status</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-3">
+          Spiele im Rad. Host kann Spiele austragen/löschen (<i class="fa-solid fa-xmark text-red-400"></i>) oder wiederherstellen.
+        </p>
+
+        <div id="gamesSetupList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+          <!-- Dynamically Populated 10 Games -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- JOKER & HELP LEGEND MODAL -->
+  <div id="legendModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 hidden">
+    <div class="glass-card max-w-2xl w-full rounded-2xl p-6 border border-amber-500/40 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-book-open"></i> Joker-Regeln & Spielhilfe
+        </h3>
+        <button onclick="closeLegendModal()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="overflow-y-auto space-y-4 pr-2 text-sm text-slate-300">
+        <div class="bg-amber-950/30 p-3 rounded-xl border border-amber-500/30">
+          <h4 class="font-bold text-amber-300 mb-1">🔥 High-Stakes Joker (In ALLEN 10 Spielen verfügbar)</h4>
+          <p class="text-xs">
+            Kann vor dem Spiel geheim eingesetzt werden. Verändert das Punkteverhältnis für dieses Spiel von Standard (3 / 2 / 1 Pkt) auf <strong>5 / 4 / 2 Punkte</strong>! High Risk, High Reward!
+          </p>
+        </div>
+
+        <h4 class="font-bold text-amber-400 text-base border-b border-slate-800 pb-1">🟢 Ausgleichs-Joker Übersicht (Spezifisch)</h4>
+
+        <div class="space-y-2 text-xs">
+          <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700">
+            <span class="font-bold text-amber-300">1. ⛏️ Minecraft:</span> Erz-Slot Vorteil + 40 Minuten Verarbeitungs-Timer.
+          </div>
+          <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700">
+            <span class="font-bold text-amber-300">2. 🏌️ Golf With Your Friends:</span> Abzugs-Bonus Slot auf die Gesamtschläge.
+          </div>
+          <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700">
+            <span class="font-bold text-amber-300">3. 🔫 Buckshot Roulette:</span> Patrone stornieren / Reroll in einer kritischen Runde.
+          </div>
+          <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700">
+            <span class="font-bold text-amber-300">4. 🧩 Personen Erkennen:</span> 3-Optionen-Filter (streicht 2 falsche Antworten weg).
+          </div>
+          <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700">
+            <span class="font-bold text-amber-300">5. 🏃 SpeedRunners:</span> 1v1 Showdown Joker – Herausforderer gewinnt +3 Pkt, Herausgeforderter +1 Pkt bei Sieg.
+          </div>
+        </div>
+
+        <div class="bg-red-950/20 p-3 rounded-xl border border-red-500/20 text-xs">
+          <span class="font-bold text-red-400">🔴 Spiele OHNE Ausgleichs-Joker:</span>
+          <p class="text-slate-400 mt-0.5">Guess the Price, GeoBingo, Stadt Land Fluss, Uno, Skribbl.io. Hier kann nur der High-Stakes Joker verwendet werden!</p>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-800 text-right">
+        <button onclick="closeLegendModal()" class="px-5 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl hover:bg-amber-400">Verstanden</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       GLOBAL STATE & GAME DATA
+       ========================================================================== */
+    
+    // Auth & User State
+    let currentUserRole = null; // 'host' or 'participant'
+    let currentParticipant = { name: '', avatarId: 1 };
+
+    // 10 Games Setup
+    const INITIAL_GAMES = [
+      { id: 1, name: 'Minecraft', icon: '⛏️', hasBalanceJoker: true, jokerDesc: 'Erz-Slot Vorteil + 40m Timer', active: true, color: '#059669' },
+      { id: 2, name: 'Golf With Your Friends', icon: '🏌️', hasBalanceJoker: true, jokerDesc: 'Abzugs-Bonus Slot', active: true, color: '#0284C7' },
+      { id: 3, name: 'Buckshot Roulette', icon: '🔫', hasBalanceJoker: true, jokerDesc: 'Patrone stornieren / Reroll', active: true, color: '#DC2626' },
+      { id: 4, name: 'Personen Erkennen', icon: '🧩', hasBalanceJoker: true, jokerDesc: '3-Optionen-Filter (streicht 2 falsche)', active: true, color: '#7C3AED' },
+      { id: 5, name: 'SpeedRunners', icon: '🏃', hasBalanceJoker: true, jokerDesc: '1v1 Showdown (+3 Pkt / +1 Pkt)', active: true, color: '#D97706' },
+      { id: 6, name: 'Guess the Price', icon: '🏷️', hasBalanceJoker: false, jokerDesc: 'Kein Ausgleichs-Joker', active: true, color: '#2563EB' },
+      { id: 7, name: 'GeoBingo', icon: '🗺️', hasBalanceJoker: false, jokerDesc: 'Kein Ausgleichs-Joker', active: true, color: '#0D9488' },
+      { id: 8, name: 'Stadt Land Fluss', icon: '✏️', hasBalanceJoker: false, jokerDesc: 'Kein Ausgleichs-Joker', active: true, color: '#4F46E5' },
+      { id: 9, name: 'Uno', icon: '🎴', hasBalanceJoker: false, jokerDesc: 'Kein Ausgleichs-Joker', active: true, color: '#E11D48' },
+      { id: 10, name: 'Skribbl.io', icon: '🎨', hasBalanceJoker: false, jokerDesc: 'Kein Ausgleichs-Joker', active: true, color: '#9333EA' }
+    ];
+
+    let gamesList = JSON.parse(JSON.stringify(INITIAL_GAMES));
+
+    // Player List & Scores (Default Mock Data)
+    let players = [
+      { id: 1, name: 'SpongeBob', avatarId: 1, score: 12, jokersRemaining: 2 },
+      { id: 2, name: 'Patrick', avatarId: 2, score: 9, jokersRemaining: 2 },
+      { id: 3, name: 'Thaddäus', avatarId: 3, score: 15, jokersRemaining: 1 },
+      { id: 4, name: 'Mr. Krabs', avatarId: 4, score: 18, jokersRemaining: 0 }
+    ];
+
+    // Wheel & Game State
+    let isSpinning = false;
+    let currentRotation = 0;
+    let currentGame = null;
+    let gamesPlayedCount = 0;
+    let timerInterval = null;
+    let timerSeconds = 20;
+
+    // History Stack for Undo Functionality (Host)
+    let stateHistory = [];
+
+    /* ==========================================================================
+       INITIALIZATION & ENTRY MODAL LOGIC
+       ========================================================================== */
+    
+    window.onload = function() {
+      initAvatarPicker();
+      renderGamesSetupList();
+      renderScoreboard();
+      drawWheel();
+      
+      // Default show Entry Modal
+      document.getElementById('entryModal').classList.remove('hidden');
+    };
+
+    // Render SpongeBob Avatars (1 to 25)
+    function initAvatarPicker() {
+      const container = document.getElementById('avatarGrid');
+      container.innerHTML = '';
+      for (let i = 1; i <= 25; i++) {
+        // SpongeBob fish images placeholder pattern or svg representations
+        const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=SpongeFish${i}&backgroundColor=b6e3f4`;
+        const div = document.createElement('div');
+        div.className = `avatar-option cursor-pointer p-1 rounded-xl border-2 border-transparent transition flex items-center justify-center ${i === 1 ? 'avatar-selected' : ''}`;
+        div.onclick = () => selectAvatar(i, div);
+        div.innerHTML = `<img src="${avatarUrl}" class="w-10 h-10 rounded-lg object-cover pointer-events-none" alt="Fish ${i}">`;
+        container.appendChild(div);
+      }
+    }
+
+    function selectAvatar(id, element) {
+      currentParticipant.avatarId = id;
+      document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('avatar-selected'));
+      element.classList.add('avatar-selected');
+    }
+
+    function selectEntryMode(mode) {
+      document.getElementById('modeSelector').classList.add('hidden');
+      if (mode === 'host') {
+        document.getElementById('hostPinSection').classList.remove('hidden');
+        document.getElementById('hostPinSection').classList.add('flex');
+        document.getElementById('hostPinInput').focus();
+      } else {
+        document.getElementById('participantSetupSection').classList.remove('hidden');
+        document.getElementById('participantSetupSection').classList.add('flex');
+      }
+    }
+
+    function resetEntryMode() {
+      document.getElementById('hostPinSection').classList.add('hidden');
+      document.getElementById('hostPinSection').classList.remove('flex');
+      document.getElementById('participantSetupSection').classList.add('hidden');
+      document.getElementById('participantSetupSection').classList.remove('flex');
+      document.getElementById('modeSelector').classList.remove('hidden');
+      document.getElementById('pinError').classList.add('hidden');
+    }
+
+    function verifyHostPin() {
+      const pin = document.getElementById('hostPinInput').value;
+      if (pin === '1234') {
+        currentUserRole = 'host';
+        applyRolePermissions();
+        document.getElementById('entryModal').classList.add('hidden');
+        showNotification('Als HOST angemeldet! Vollzugriff aktiviert.', 'success');
+      } else {
+        document.getElementById('pinError').classList.remove('hidden');
+      }
+    }
+
+    function confirmParticipantLogin() {
+      const name = document.getElementById('playerNameInput').value.trim();
+      if (!name) {
+        alert('Bitte gib einen Spielernamen ein!');
+        return;
+      }
+      currentParticipant.name = name;
+      currentUserRole = 'participant';
+
+      // Check if player already exists in list or add new
+      let existing = players.find(p => p.name.toLowerCase() === name.toLowerCase());
+      if (!existing) {
+        players.push({
+          id: Date.now(),
+          name: name,
+          avatarId: currentParticipant.avatarId,
+          score: 0,
+          jokersRemaining: 2
+        });
+      }
+
+      applyRolePermissions();
+      renderScoreboard();
+      document.getElementById('entryModal').classList.add('hidden');
+      showNotification(`Willkommen, ${name}! Du bist als Teilnehmer dabei.`, 'info');
+    }
+
+    function applyRolePermissions() {
+      saveStateForUndo();
+      const roleBadge = document.getElementById('roleBadge');
+      const spinBtn = document.getElementById('spinBtn');
+      const participantNotice = document.getElementById('participantSpinNotice');
+      const hostTools = document.getElementById('hostQuickTools');
+      const participantBadge = document.getElementById('participantBadge');
+
+      if (currentUserRole === 'host') {
+        roleBadge.innerHTML = `<span class="text-amber-400 font-bold">🛡️ HOST MODUS</span> (PIN verifiziert)`;
+        spinBtn.classList.remove('hidden');
+        participantNotice.classList.add('hidden');
+        hostTools.classList.remove('hidden');
+        participantBadge.classList.add('hidden');
+      } else {
+        roleBadge.innerHTML = `<span class="text-emerald-400 font-bold">🎮 TEILNEHMER MODUS</span>`;
+        spinBtn.classList.add('hidden');
+        participantNotice.classList.remove('hidden');
+        hostTools.classList.add('hidden');
+
+        // Show Participant badge
+        participantBadge.classList.remove('hidden');
+        participantBadge.classList.add('flex');
+        document.getElementById('myPlayerName').innerText = currentParticipant.name;
+        document.getElementById('myAvatarImg').src = `https://api.dicebear.com/7.x/bottts/svg?seed=SpongeFish${currentParticipant.avatarId}&backgroundColor=b6e3f4`;
+      }
+
+      renderGamesSetupList();
+      renderScoreboard();
+    }
+
+    function switchUserRole() {
+      document.getElementById('entryModal').classList.remove('hidden');
+      resetEntryMode();
+    }
+
+    /* ==========================================================================
+       CANVAS WHEEL RENDERING & LOGIC
+       ========================================================================== */
+    
+    function getActiveGames() {
+      return gamesList.filter(g => g.active);
+    }
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const activeGames = getActiveGames();
+      const total = activeGames.length;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (total === 0) {
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.arc(200, 200, 190, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 16px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Keine Spiele aktiv!', 200, 205);
+        return;
+      }
+
+      const arc = (2 * Math.PI) / total;
+
+      for (let i = 0; i < total; i++) {
+        const angle = currentRotation + i * arc;
+        const game = activeGames[i];
+
+        // Draw sector
+        ctx.beginPath();
+        ctx.fillStyle = game.color;
+        ctx.moveTo(200, 200);
+        ctx.arc(200, 200, 190, angle, angle + arc);
+        ctx.lineTo(200, 200);
+        ctx.fill();
+
+        // Sector border
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Draw Text & Icon
+        ctx.save();
+        ctx.translate(200, 200);
+        ctx.rotate(angle + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px Inter';
+
+        // Badge indicator 🟢 / 🔴
+        const badge = game.hasBalanceJoker ? '🟢' : '🔴';
+        const label = `${game.icon} ${game.name} ${badge}`;
+        ctx.fillText(label, 170, 5);
+        ctx.restore();
+      }
+
+      // Center Hub
+      ctx.beginPath();
+      ctx.arc(200, 200, 45, 0, 2 * Math.PI);
+      ctx.fillStyle = '#0f172a';
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('CASINO', 200, 195);
+      ctx.fillText('WHEEL', 200, 210);
+    }
+
+    function spinWheel() {
+      if (currentUserRole !== 'host') {
+        showNotification('Nur der Host darf das Rad drehen!', 'error');
+        return;
+      }
+
+      const activeGames = getActiveGames();
+      if (activeGames.length === 0) {
+        showNotification('Bitte aktiviere mindestens ein Spiel!', 'error');
+        return;
+      }
+
+      if (isSpinning) return;
+      isSpinning = true;
+
+      // Play Sound
+      try {
+        const synth = new Tone.Synth().toDestination();
+        synth.triggerAttackRelease("C4", "8n");
+      } catch(e){}
+
+      saveStateForUndo();
+
+      const spinRounds = 5 + Math.floor(Math.random() * 5);
+      const randomDegree = Math.random() * 2 * Math.PI;
+      const targetRotation = currentRotation + (spinRounds * 2 * Math.PI) + randomDegree;
+      const duration = 4000;
+      const start = performance.now();
+
+      function animateSpin(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing out quadratic
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentRotation = currentRotation + (targetRotation - currentRotation) * (easeOut - progress / (duration/16));
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          isSpinning = false;
+          determineWinner(activeGames);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    function determineWinner(activeGames) {
+      const total = activeGames.length;
+      const arc = (2 * Math.PI) / total;
+      
+      // Calculate selected sector
+      let normalizedRotation = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
+      // Pointer is at Top (1.5 * PI in standard canvas coordinates)
+      let adjustedAngle = (normalizedRotation + (1.5 * Math.PI)) % (2 * Math.PI);
+      let selectedIndex = Math.floor(adjustedAngle / arc) % total;
+
+      currentGame = activeGames[selectedIndex];
+      gamesPlayedCount++;
+
+      // Update Match UI
+      document.getElementById('currentGameName').innerText = `${currentGame.icon} ${currentGame.name}`;
+      document.getElementById('currentGameDesc').innerText = currentGame.jokerDesc;
+      
+      const badgeContainer = document.getElementById('gameJokerBadgeContainer');
+      if (currentGame.hasBalanceJoker) {
+        badgeContainer.innerHTML = `<span class="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">🟢 Ausgleichs-Joker Aktiv</span>`;
+      } else {
+        badgeContainer.innerHTML = `<span class="px-3 py-1.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40 text-xs font-bold">🔴 Kein Ausgleichs-Joker</span>`;
+      }
+
+      // Check Half-Time Roulette after Game 5
+      if (gamesPlayedCount === 5) {
+        document.getElementById('rouletteSection').classList.remove('hidden');
+        showNotification('🎰 HALBZEIT! Das Halbzeit-Roulette ist jetzt geöffnet!', 'info');
+      }
+
+      // Trigger 20-second Secret Joker Phase
+      startSecretJokerPhase();
+    }
+
+    /* ==========================================================================
+       JOKER PHASE & TIMER LOGIC
+       ========================================================================== */
+    
+    function startSecretJokerPhase() {
+      document.getElementById('gamePhaseTitle').innerText = 'Joker-Auswahl Phase';
+      document.getElementById('jokerActionPanel').classList.remove('hidden');
+
+      // Populate Joker Choice Buttons
+      const btnContainer = document.getElementById('jokerSelectionButtons');
+      btnContainer.innerHTML = '';
+
+      // Button 1: High Stakes Joker (Always available)
+      const highStakesBtn = document.createElement('button');
+      highStakesBtn.className = 'p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-left flex flex-col transition';
+      highStakesBtn.onclick = () => useJoker('High-Stakes');
+      highStakesBtn.innerHTML = `
+        <span class="font-bold text-amber-300 text-xs">🔥 High-Stakes Joker</span>
+        <span class="text-[10px] text-slate-400">Punkteverhältnis: 5 / 4 / 2 statt 3 / 2 / 1</span>
+      `;
+      btnContainer.appendChild(highStakesBtn);
+
+      // Button 2: Specific Balance Joker (if supported)
+      if (currentGame && currentGame.hasBalanceJoker) {
+        const balanceBtn = document.createElement('button');
+        balanceBtn.className = 'p-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-left flex flex-col transition';
+        balanceBtn.onclick = () => useJoker('Ausgleichs-Joker');
+        balanceBtn.innerHTML = `
+          <span class="font-bold text-emerald-300 text-xs">🟢 Ausgleichs-Joker</span>
+          <span class="text-[10px] text-slate-400">${currentGame.jokerDesc}</span>
+        `;
+        btnContainer.appendChild(balanceBtn);
+      }
+
+      // Show Buzzer Panel if Game is "Personen Erkennen"
+      if (currentGame && currentGame.name.includes('Personen Erkennen')) {
+        document.getElementById('buzzerPanel').classList.remove('hidden');
+      } else {
+        document.getElementById('buzzerPanel').classList.add('hidden');
+      }
+
+      // Start 20s countdown
+      resetGlobalTimer();
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        document.getElementById('phaseTimer').innerText = `00:${timerSeconds < 10 ? '0' : ''}${timerSeconds}`;
+        
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('gamePhaseTitle').innerText = 'Spiel Aktiv';
+          showNotification('Zeit abgelaufen! Joker-Phase beendet.', 'info');
+        }
+      }, 1000);
+    }
+
+    function resetGlobalTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerSeconds = 20;
+      document.getElementById('phaseTimer').innerText = '00:20';
+    }
+
+    function useJoker(type) {
+      if (currentUserRole === 'participant') {
+        let p = players.find(x => x.name.toLowerCase() === currentParticipant.name.toLowerCase());
+        if (p && p.jokersRemaining <= 0) {
+          showNotification('Du hast keine Joker mehr übrig!', 'error');
+          return;
+        }
+        if (p) {
+          p.jokersRemaining--;
+          renderScoreboard();
+        }
+      }
+      showNotification(`Joker [${type}] erfolgreich für ${currentGame ? currentGame.name : 'das Spiel'} gesetzt!`, 'success');
+    }
+
+    /* ==========================================================================
+       BUZZER INTERACTION SYSTEM
+       ========================================================================== */
+    
+    function pressBuzzer() {
+      const resultDiv = document.getElementById('buzzerResult');
+      const name = currentUserRole === 'participant' ? currentParticipant.name : 'Host';
+      
+      // Play Buzzer Sound
+      try {
+        const synth = new Tone.MembraneSynth().toDestination();
+        synth.triggerAttackRelease("C2", "8n");
+      } catch(e){}
+
+      resultDiv.innerHTML = `<span class="text-amber-400 font-bold">🚨 ${name}</span> hat zuerst gebuzzert!`;
+      showNotification(`🚨 ${name} HAT GEBUZZERT!`, 'info');
+    }
+
+    /* ==========================================================================
+       HALBZEIT ROULETTE LOGIC
+       ========================================================================== */
+    
+    function placeRouletteBet(type) {
+      const betAmount = prompt('Wie viele Punkte möchtest du setzen? (0 - 3 Punkte)', '1');
+      const points = parseInt(betAmount, 10);
+      
+      if (isNaN(points) || points < 0 || points > 3) {
+        showNotification('Ungültiger Einsatz! (Nur 0-3 Punkte erlaubt)', 'error');
+        return;
+      }
+
+      showNotification(`Roulette-Einsatz (${type.toUpperCase()}) von ${points} Punkt(en) platziert!`, 'success');
+    }
+
+    /* ==========================================================================
+       SCOREBOARD & HOST SETUP CONTROLS
+       ========================================================================== */
+    
+    function renderScoreboard() {
+      const container = document.getElementById('scoreboardList');
+      container.innerHTML = '';
+
+      document.getElementById('playerCountLabel').innerText = `${players.length} Spieler`;
+
+      // Sort by score descending
+      const sorted = [...players].sort((a, b) => b.score - a.score);
+
+      sorted.forEach((player, index) => {
+        const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=SpongeFish${player.avatarId}&backgroundColor=b6e3f4`;
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/40 transition';
+
+        let rankBadge = `<span class="w-6 text-center font-bold text-slate-400">#${index + 1}</span>`;
+        if (index === 0) rankBadge = `<span class="w-6 text-center text-xl">🥇</span>`;
+        if (index === 1) rankBadge = `<span class="w-6 text-center text-xl">🥈</span>`;
+        if (index === 2) rankBadge = `<span class="w-6 text-center text-xl">🥉</span>`;
+
+        let hostControls = '';
+        if (currentUserRole === 'host') {
+          hostControls = `
+            <div class="flex items-center gap-1 ml-2">
+              <button onclick="adjustScore(${player.id}, 1)" class="w-6 h-6 rounded bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 font-bold text-xs flex items-center justify-center">+1</button>
+              <button onclick="adjustScore(${player.id}, -1)" class="w-6 h-6 rounded bg-red-600/30 hover:bg-red-600 text-red-300 font-bold text-xs flex items-center justify-center">-1</button>
+              <button onclick="refundJoker(${player.id})" title="Joker Erstatten" class="w-6 h-6 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-300 text-[10px] flex items-center justify-center">🃏+</button>
+            </div>
+          `;
         }
 
-        function updateAvatarPreview(playerId, avatarIdx) {
-            gameState.players[playerId - 1].avatarIdx = parseInt(avatarIdx);
-            document.getElementById(`avatarPreview_${playerId}`).innerHTML = SPONGEBOB_AVATARS[avatarIdx].svg;
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            ${rankBadge}
+            <img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-amber-500/30 bg-slate-700" alt="Avatar" />
+            <div>
+              <div class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                ${player.name}
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">🃏 ${player.jokersRemaining}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <span class="font-mono text-lg font-black text-amber-400 mr-2">${player.score} Pkt</span>
+            ${hostControls}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderGamesSetupList() {
+      const container = document.getElementById('gamesSetupList');
+      container.innerHTML = '';
+
+      gamesList.forEach(game => {
+        const div = document.createElement('div');
+        div.className = `flex items-center justify-between p-2.5 rounded-xl border text-xs transition ${
+          game.active ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-900/40 border-slate-800 opacity-50'
+        }`;
+
+        let hostDeleteBtn = '';
+        if (currentUserRole === 'host') {
+          hostDeleteBtn = game.active
+            ? `<button onclick="toggleGameActive(${game.id})" class="text-red-400 hover:text-red-300 p-1 px-2 rounded hover:bg-red-500/20"><i class="fa-solid fa-xmark"></i></button>`
+            : `<button onclick="toggleGameActive(${game.id})" class="text-emerald-400 hover:text-emerald-300 p-1 px-2 rounded hover:bg-emerald-500/20"><i class="fa-solid fa-rotate-left"></i></button>`;
         }
 
-        function confirmPlayersAndStart() {
-            gameState.players.forEach(p => {
-                const nameInput = document.getElementById(`playerName_${p.id}`);
-                if (nameInput && nameInput.value.trim()) {
-                    p.name = nameInput.value.trim();
-                }
-            });
-
-            document.getElementById('setupView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.remove('hidden');
-            renderLeaderboard();
-        }
-
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboardCards');
-            container.innerHTML = '';
-
-            gameState.players.forEach(p => {
-                container.innerHTML += `
-                    <div class="bg-black/50 border border-gold/30 rounded-xl p-3 flex items-center space-x-3 shadow-md">
-                        <div class="w-12 h-12 rounded-full border border-gold bg-casino p-0.5 flex-shrink-0">
-                            ${SPONGEBOB_AVATARS[p.avatarIdx].svg}
-                        </div>
-                        <div class="overflow-hidden">
-                            <div class="text-xs font-bold text-white truncate">${p.name}</div>
-                            <div class="text-lg font-black text-gold">${p.score} <span class="text-[10px] text-gray-400 font-normal">Pkt</span></div>
-                            <div class="text-[10px] text-gray-400 flex gap-1">
-                                <span>🟢 ${p.balanceJokers}</span> | <span>⚡ ${p.highStakesJokers}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderSetupBoard() {
-            const container = document.getElementById('setupBoardList');
-            container.innerHTML = '';
-
-            MASTER_GAMES.forEach(game => {
-                const isActive = gameState.activeGames.some(g => g.id === game.id);
-                const badge = game.hasBalanceJoker ? '<span class="text-green-400 font-bold">🟢</span>' : '<span class="text-red-400 font-bold">🔴</span>';
-
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-gold/20 text-xs">
-                        <div class="flex items-center space-x-2">
-                            <span>${badge}</span>
-                            <span class="${isActive ? 'text-gray-200 font-semibold' : 'text-gray-500 line-through'}">${game.name}</span>
-                        </div>
-                        <button onclick="toggleGameActive('${game.id}')" class="text-xs px-2 py-0.5 rounded ${isActive ? 'bg-red-900/60 text-red-200 hover:bg-red-800' : 'bg-green-900/60 text-green-200 hover:bg-green-800'}">
-                            ${isActive ? '❌ Entfernen' : '➕ Hinzufügen'}
-                        </button>
-                    </div>
-                `;
-            });
-
-            document.getElementById('activeGameCount').innerText = `${gameState.activeGames.length} Aktiv`;
-            drawWheel();
-        }
-
-        function toggleGameActive(gameId) {
-            const exists = gameState.activeGames.some(g => g.id === gameId);
-            if (exists) {
-                if (gameState.activeGames.length <= 2) {
-                    alert("Mindestens 2 Spiele müssen auf dem Glücksrad bleiben!");
-                    return;
-                }
-                gameState.activeGames = gameState.activeGames.filter(g => g.id !== gameId);
-            } else {
-                const original = MASTER_GAMES.find(g => g.id === gameId);
-                if (original) gameState.activeGames.push(original);
-            }
-            renderSetupBoard();
-        }
-
-        function drawWheel() {
-            const canvas = document.getElementById('wheelCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const numSegments = gameState.activeGames.length;
-            const radius = canvas.width / 2;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (numSegments === 0) return;
-
-            const sliceAngle = (2 * Math.PI) / numSegments;
-
-            gameState.activeGames.forEach((game, i) => {
-                const angle = i * sliceAngle;
-                
-                // Draw Segment
-                ctx.beginPath();
-                ctx.fillStyle = i % 2 === 0 ? '#1f2833' : '#0b0c10';
-                ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius - 5, angle, angle + sliceAngle);
-                ctx.closePath();
-                ctx.fill();
-                ctx.strokeStyle = '#d4af37';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // Draw Text
-                ctx.save();
-                ctx.translate(radius, radius);
-                ctx.rotate(angle + sliceAngle / 2);
-                ctx.textAlign = 'right';
-                ctx.fillStyle = game.hasBalanceJoker ? '#4ade80' : '#f87171';
-                ctx.font = 'bold 12px Inter';
-                const label = `${game.hasBalanceJoker ? '🟢' : '🔴'} ${game.name}`;
-                ctx.fillText(label, radius - 20, 4);
-                ctx.restore();
-            });
-
-            // Center Pin
-            ctx.beginPath();
-            ctx.arc(radius, radius, 25, 0, 2 * Math.PI);
-            ctx.fillStyle = '#d4af37';
-            ctx.fill();
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-        }
-
-        let isSpinning = false;
-        function spinWheel() {
-            if (isSpinning || gameState.activeGames.length === 0) return;
-            isSpinning = true;
-
-            const canvas = document.getElementById('wheelCanvas');
-            const selectedIdx = Math.floor(Math.random() * gameState.activeGames.length);
-            const selectedGame = gameState.activeGames[selectedIdx];
-            gameState.currentGame = selectedGame;
-
-            let rotation = 0;
-            const targetRotation = 360 * 5 + (360 - (selectedIdx * (360 / gameState.activeGames.length)));
-            const startTime = performance.now();
-
-            function animateSpin(now) {
-                const elapsed = now - startTime;
-                const duration = 4000;
-
-                if (elapsed < duration) {
-                    const easeOut = 1 - Math.pow(1 - (elapsed / duration), 3);
-                    rotation = easeOut * targetRotation;
-                    canvas.style.transform = `rotate(${rotation}deg)`;
-                    requestAnimationFrame(animateSpin);
-                } else {
-                    canvas.style.transform = `rotate(${targetRotation}deg)`;
-                    isSpinning = false;
-                    setTimeout(() => startJokerPhase(selectedGame), 500);
-                }
-            }
-            requestAnimationFrame(animateSpin);
-        }
-
-        function startJokerPhase(game) {
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('jokerPhaseView').classList.remove('hidden');
-
-            document.getElementById('jokerPhaseGameTitle').innerText = game.name;
-            const badge = document.getElementById('jokerBadgeStatus');
-            if (game.hasBalanceJoker) {
-                badge.className = "inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-green-900/60 text-green-300 border border-green-500/50";
-                badge.innerHTML = "🟢 Ausgleichs-Joker & High-Stakes verfügbar!";
-            } else {
-                badge.className = "inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-red-900/60 text-red-300 border border-red-500/50";
-                badge.innerHTML = "🔴 Nur High-Stakes Joker wählbar (Kein Ausgleichs-Joker)";
-            }
-
-            // Render Player Cards
-            const grid = document.getElementById('jokerPlayerCardsGrid');
-            grid.innerHTML = '';
-
-            gameState.players.forEach(p => {
-                p.activeJoker = null; // Reset current selection
-                grid.innerHTML += `
-                    <div class="bg-black/50 border border-gold/30 rounded-xl p-4 space-y-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-full border border-gold bg-casino p-0.5">
-                                ${SPONGEBOB_AVATARS[p.avatarIdx].svg}
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-sm text-white">${p.name}</h4>
-                                <p class="text-[10px] text-gray-400">Joker wählen:</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-2 text-xs">
-                            <button id="jokerBtn_none_${p.id}" onclick="selectPlayerJoker(${p.id}, null)" class="bg-gray-800 text-gray-200 p-2 rounded border border-gray-600 font-bold hover:bg-gray-700">Kein Joker</button>
-                            <button id="jokerBtn_high_${p.id}" onclick="selectPlayerJoker(${p.id}, 'high')" class="bg-yellow-900/40 text-yellow-300 p-2 rounded border border-yellow-500/40 font-bold hover:bg-yellow-800/60 ${p.highStakesJokers <= 0 ? 'opacity-40 cursor-not-allowed' : ''}">⚡ High-Stakes</button>
-                            <button id="jokerBtn_bal_${p.id}" onclick="selectPlayerJoker(${p.id}, 'balance')" class="bg-green-900/40 text-green-300 p-2 rounded border border-green-500/40 font-bold hover:bg-green-800/60 ${(!game.hasBalanceJoker || p.balanceJokers <= 0) ? 'opacity-40 cursor-not-allowed' : ''}">🟢 Ausgleich</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Timer logic
-            gameState.jokerTimer = 20;
-            document.getElementById('jokerTimerDisplay').innerText = "20";
-            clearInterval(gameState.jokerInterval);
-            gameState.jokerInterval = setInterval(() => {
-                gameState.jokerTimer--;
-                document.getElementById('jokerTimerDisplay').innerText = gameState.jokerTimer;
-                if (gameState.jokerTimer <= 0) {
-                    clearInterval(gameState.jokerInterval);
-                    finishJokerPhase();
-                }
-            }, 1000);
-        }
-
-        function selectPlayerJoker(playerId, type) {
-            const player = gameState.players.find(p => p.id === playerId);
-            if (!player) return;
-
-            if (type === 'balance' && (!gameState.currentGame.hasBalanceJoker || player.balanceJokers <= 0)) return;
-            if (type === 'high' && player.highStakesJokers <= 0) return;
-
-            player.activeJoker = type;
-
-            // Highlight buttons
-            document.getElementById(`jokerBtn_none_${playerId}`).className = type === null ? "bg-gold text-black p-2 rounded border border-gold font-bold" : "bg-gray-800 text-gray-200 p-2 rounded border border-gray-600 font-bold";
-            document.getElementById(`jokerBtn_high_${playerId}`).className = type === 'high' ? "bg-yellow-400 text-black p-2 rounded border border-yellow-500 font-bold" : "bg-yellow-900/40 text-yellow-300 p-2 rounded border border-yellow-500/40 font-bold";
-            document.getElementById(`jokerBtn_bal_${playerId}`).className = type === 'balance' ? "bg-green-400 text-black p-2 rounded border border-green-500 font-bold" : "bg-green-900/40 text-green-300 p-2 rounded border border-green-500/40 font-bold";
-        }
-
-        function finishJokerPhase() {
-            clearInterval(gameState.jokerInterval);
-            document.getElementById('jokerPhaseView').classList.add('hidden');
-            document.getElementById('minigameArenaView').classList.remove('hidden');
-
-            // Deduct Jokers
-            gameState.players.forEach(p => {
-                if (p.activeJoker === 'high') p.highStakesJokers--;
-                if (p.activeJoker === 'balance') p.balanceJokers--;
-            });
-
-            renderLeaderboard();
-            setupMinigameArena(gameState.currentGame);
-        }
-
-        function setupMinigameArena(game) {
-            document.getElementById('arenaGameTitle').innerText = game.name;
-            const container = document.getElementById('dynamicGameContainer');
-            container.innerHTML = '';
-
-            // Inject custom Game Engines based on ID
-            if (game.id === 'minecraft') {
-                container.innerHTML = `
-                    <div class="text-center space-y-4 max-w-lg w-full">
-                        <div class="bg-black/60 p-4 rounded-2xl border border-green-500/40 text-xs text-green-300">
-                            ⛏️ <strong>Minecraft Challenge (40m Timer)</strong><br>
-                            Ausgleichs-Joker Aktiv? Dreht am Erz-Slot für Extra-Ressourcen!
-                        </div>
-                        <div class="flex justify-center gap-4 text-4xl bg-casino p-6 rounded-2xl border-2 border-gold font-mono">
-                            <span id="mcSlot1">💎</span>
-                            <span id="mcSlot2">🧱</span>
-                            <span id="mcSlot3">🗡️</span>
-                        </div>
-                        <button onclick="spinMinecraftSlot()" class="bg-green-700 hover:bg-green-600 text-white font-bold px-6 py-2 rounded-xl text-sm shadow-md">
-                            🎰 Erz-Slot Machine Drehen
-                        </button>
-                    </div>
-                `;
-            } else if (game.id === 'golf') {
-                container.innerHTML = `
-                    <div class="text-center space-y-4 max-w-lg w-full">
-                        <div class="bg-black/60 p-4 rounded-2xl border border-blue-500/40 text-xs text-blue-300">
-                            🏌️ <strong>Golf With Your Friends</strong><br>
-                            Ausgleichs-Joker zieht extra Schläge von der Endsumme ab!
-                        </div>
-                        <div class="flex justify-center gap-4 text-4xl bg-casino p-6 rounded-2xl border-2 border-gold font-mono">
-                            <span id="golfSlot1">⛳</span>
-                            <span id="golfSlot2">-3 Schläge</span>
-                        </div>
-                    </div>
-                `;
-            } else if (game.id === 'speedrunners') {
-                container.innerHTML = `
-                    <div class="text-center space-y-4 max-w-lg w-full bg-black/40 p-6 rounded-2xl border border-gold/30">
-                        <h4 class="font-cinzel text-lg font-bold text-yellow-400">🏃 SpeedRunners 1v1 Showdown</h4>
-                        <p class="text-xs text-gray-300">
-                            Spieler mit Ausgleichs-Joker fordert 1 Gegner zum 1v1 nach der Hauptrunde heraus!
-                            <br><span class="text-green-400">Sieg Challenger: +3 Extra-Punkte</span> | <span class="text-red-400">Sieg Verteidiger: +1 Extra-Punkt</span>
-                        </p>
-                    </div>
-                `;
-            } else if (game.id === 'personen') {
-                container.innerHTML = `
-                    <div class="text-center space-y-4 max-w-lg w-full">
-                        <div class="bg-black/60 p-4 rounded-2xl border border-purple-500/40 text-xs text-purple-300">
-                            🧩 <strong>Personen Erkennen Quiz</strong><br>
-                            Blur / Pixel Filter & 5s Freeze-Buzzer (+2 / -2 Pkt.)
-                        </div>
-                        <div id="quizImgBox" class="w-64 h-48 mx-auto bg-gray-800 rounded-xl overflow-hidden border-2 border-gold flex items-center justify-center filter-blur transition-all">
-                            <span class="text-4xl">👤</span>
-                        </div>
-                        <button onclick="revealQuizImage()" class="bg-purple-700 hover:bg-purple-600 text-white font-bold px-6 py-2 rounded-xl text-sm">
-                            🔍 Filter Reduzieren
-                        </button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="text-center p-8 text-gray-400 space-y-2">
-                        <i class="fa-solid fa-gamepad text-4xl text-gold/40"></i>
-                        <p class="text-sm font-bold">Standard Match - Nutzt In-Game Scoreboard</p>
-                    </div>
-                `;
-            }
-
-            // Render Score Dropdowns
-            const scoreContainer = document.getElementById('arenaScoreInputs');
-            scoreContainer.innerHTML = '';
-
-            gameState.players.forEach(p => {
-                scoreContainer.innerHTML += `
-                    <div class="bg-black/50 border border-gold/20 p-3 rounded-xl space-y-2">
-                        <div class="text-xs font-bold text-white truncate">${p.name}</div>
-                        <select id="scoreInput_${p.id}" class="w-full bg-casino border border-gold/40 rounded px-2 py-1 text-sm text-gold">
-                            <option value="5">1. Platz (5 Pkt.)</option>
-                            <option value="3">2. Platz (3 Pkt.)</option>
-                            <option value="2">3. Platz (2 Pkt.)</option>
-                            <option value="1">4. Platz (1 Pkt.)</option>
-                        </select>
-                    </div>
-                `;
-            });
-        }
-
-        function spinMinecraftSlot() {
-            const ores = ['💎', '🧱', '🗡️', '🌟', '🍎'];
-            document.getElementById('mcSlot1').innerText = ores[Math.floor(Math.random() * ores.length)];
-            document.getElementById('mcSlot2').innerText = ores[Math.floor(Math.random() * ores.length)];
-            document.getElementById('mcSlot3').innerText = ores[Math.floor(Math.random() * ores.length)];
-        }
-
-        function revealQuizImage() {
-            const box = document.getElementById('quizImgBox');
-            box.className = "w-64 h-48 mx-auto bg-gray-800 rounded-xl overflow-hidden border-2 border-gold flex items-center justify-center transition-all";
-        }
-
-        function submitGameScores() {
-            gameState.players.forEach(p => {
-                const sel = document.getElementById(`scoreInput_${p.id}`);
-                if (sel) {
-                    let pts = parseInt(sel.value);
-                    // High stakes check
-                    if (p.activeJoker === 'high') {
-                        if (pts === 5) pts = 5;
-                        else if (pts === 3) pts = 4;
-                        else if (pts === 2) pts = 2;
-                        else pts = 0;
-                    }
-                    p.score += pts;
-                }
-            });
-
-            // Remove played game from active games
-            gameState.activeGames = gameState.activeGames.filter(g => g.id !== gameState.currentGame.id);
-
-            gameState.currentRound++;
-            document.getElementById('currentRoundDisplay').innerText = gameState.currentRound;
-
-            document.getElementById('minigameArenaView').classList.add('hidden');
-
-            // Trigger Halbzeit-Roulette after Game 5 (Round 6 start)
-            if (gameState.currentRound === 6) {
-                startRoulettePhase();
-            } else {
-                document.getElementById('dashboardView').classList.remove('hidden');
-                renderLeaderboard();
-                renderSetupBoard();
-            }
-        }
-
-        function startRoulettePhase() {
-            document.getElementById('rouletteView').classList.remove('hidden');
-            const container = document.getElementById('roulettePlayerWagers');
-            container.innerHTML = '';
-
-            gameState.players.forEach(p => {
-                container.innerHTML += `
-                    <div class="bg-black/60 border border-gold/40 rounded-xl p-4 space-y-3">
-                        <div class="font-bold text-sm text-white">${p.name} (Punkte: ${p.score})</div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] text-gray-400">Einsatz (0 - 3 Pkt.):</label>
-                            <select id="rouletteBetAmt_${p.id}" class="w-full bg-casino border border-gold/40 rounded px-2 py-1 text-xs text-gold">
-                                <option value="0">0 Punkte</option>
-                                <option value="1">1 Punkt</option>
-                                <option value="2">2 Punkte</option>
-                                <option value="3">3 Punkte</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] text-gray-400">Wett-Typ:</label>
-                            <select id="rouletteBetType_${p.id}" class="w-full bg-casino border border-gold/40 rounded px-2 py-1 text-xs text-gold">
-                                <option value="red">Rot (2x)</option>
-                                <option value="black">Schwarz (2x)</option>
-                                <option value="doz1">1. Dutzend 1-12 (3x)</option>
-                                <option value="single">Zahl 0-36 (36x)</option>
-                            </select>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function spinRouletteWheel() {
-            const numDisplay = document.getElementById('rouletteNumberResult');
-            const statusText = document.getElementById('rouletteStatusText');
-
-            statusText.innerText = "Kugel rollt im Kessel...";
-            
-            const winningNum = Math.floor(Math.random() * 37); // 0-36
-            const isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(winningNum);
-
-            setTimeout(() => {
-                numDisplay.innerText = winningNum;
-                numDisplay.style.backgroundColor = winningNum === 0 ? '#15803d' : (isRed ? '#b91c1c' : '#111827');
-                statusText.innerText = `Gewinnzahl: ${winningNum} (${winningNum === 0 ? 'Grüne Null' : (isRed ? 'ROT' : 'SCHWARZ')})`;
-
-                // Evaluate bets
-                gameState.players.forEach(p => {
-                    const amt = parseInt(document.getElementById(`rouletteBetAmt_${p.id}`).value);
-                    const type = document.getElementById(`rouletteBetType_${p.id}`).value;
-
-                    if (amt > 0) {
-                        p.score -= amt; // deduct wager
-                        let won = false;
-                        let multiplier = 0;
-
-                        if (type === 'red' && isRed) { won = true; multiplier = 2; }
-                        if (type === 'black' && !isRed && winningNum !== 0) { won = true; multiplier = 2; }
-                        if (type === 'doz1' && winningNum >= 1 && winningNum <= 12) { won = true; multiplier = 3; }
-
-                        if (won) {
-                            p.score += (amt * multiplier);
-                        }
-                    }
-                });
-
-                document.getElementById('spinRouletteBtn').classList.add('hidden');
-                document.getElementById('finishRouletteBtn').classList.remove('hidden');
-            }, 2000);
-        }
-
-        function finishRoulettePhase() {
-            document.getElementById('rouletteView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.remove('hidden');
-            renderLeaderboard();
-            renderSetupBoard();
-        }
-
-        function openHostAuth() {
-            if (gameState.isHostAuthenticated) {
-                openHostConsole();
-            } else {
-                const pin = prompt("Bitte Host-PIN eingeben:");
-                if (pin === "1234") {
-                    gameState.isHostAuthenticated = true;
-                    document.getElementById('hostBtnText').innerText = "Admin Console";
-                    openHostConsole();
-                } else if (pin !== null) {
-                    alert("Falscher PIN! (Standard: 1234)");
-                }
-            }
-        }
-
-        function openHostConsole() {
-            renderHostConsoleList();
-            toggleModal('hostConsoleModal');
-        }
-
-        function renderHostConsoleList() {
-            const container = document.getElementById('hostPlayerControlList');
-            container.innerHTML = '';
-
-            gameState.players.forEach(p => {
-                container.innerHTML += `
-                    <div class="bg-black/50 border border-gold/30 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2">
-                        <div class="font-bold text-sm text-white">${p.name}</div>
-                        <div class="flex items-center space-x-2 text-xs">
-                            <span>Punkte: </span>
-                            <button onclick="adjustHostScore(${p.id}, -1)" class="bg-red-800 text-white px-2 py-0.5 rounded font-bold">-</button>
-                            <span class="font-mono text-gold font-bold">${p.score}</span>
-                            <button onclick="adjustHostScore(${p.id}, 1)" class="bg-green-800 text-white px-2 py-0.5 rounded font-bold">+</button>
-                        </div>
-                        <div class="flex items-center space-x-2 text-xs">
-                            <span>🟢 Joker: </span>
-                            <button onclick="adjustHostJoker(${p.id}, 'bal', -1)" class="bg-red-800 text-white px-2 py-0.5 rounded font-bold">-</button>
-                            <span class="font-mono text-white font-bold">${p.balanceJokers}</span>
-                            <button onclick="adjustHostJoker(${p.id}, 'bal', 1)" class="bg-green-800 text-white px-2 py-0.5 rounded font-bold">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function adjustHostScore(playerId, delta) {
-            const p = gameState.players.find(x => x.id === playerId);
-            if (p) p.score += delta;
-            renderHostConsoleList();
-            renderLeaderboard();
-        }
-
-        function adjustHostJoker(playerId, type, delta) {
-            const p = gameState.players.find(x => x.id === playerId);
-            if (p) p.balanceJokers = Math.max(0, p.balanceJokers + delta);
-            renderHostConsoleList();
-            renderLeaderboard();
-        }
-
-        function hostRefundJokers() {
-            gameState.players.forEach(p => {
-                if (p.activeJoker === 'high') p.highStakesJokers++;
-                if (p.activeJoker === 'balance') p.balanceJokers++;
-                p.activeJoker = null;
-            });
-            alert("Alle aktivierten Joker der aktuellen Runde wurden zurückerstattet!");
-            renderLeaderboard();
-            toggleModal('hostConsoleModal');
-        }
-
-        function cancelAndSkipGame() {
-            if (confirm("Möchtest du das aktuelle Spiel wirklich abbrechen und skippen? Joker werden zurückerstattet!")) {
-                hostRefundJokers();
-                document.getElementById('minigameArenaView').classList.add('hidden');
-                document.getElementById('dashboardView').classList.remove('hidden');
-            }
-        }
-
-        function toggleModal(modalId) {
-            const el = document.getElementById(modalId);
-            if (el) el.classList.toggle('hidden');
-        }
-    </script>
+        const jokerBadge = game.hasBalanceJoker 
+          ? '<span class="text-emerald-400 font-bold" title="Ausgleichs-Joker Verfügbar">🟢</span>' 
+          : '<span class="text-red-400 font-bold" title="Kein Ausgleichs-Joker">🔴</span>';
+
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-base">${game.icon}</span>
+            <span class="font-semibold text-slate-200">${game.id}. ${game.name}</span>
+            ${jokerBadge}
+          </div>
+          <div class="flex items-center gap-2">
+            ${hostDeleteBtn}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    /* ==========================================================================
+       HOST ACTIONS & UNDO SYSTEM
+       ========================================================================== */
+    
+    function saveStateForUndo() {
+      const snapshot = {
+        players: JSON.parse(JSON.stringify(players)),
+        gamesList: JSON.parse(JSON.stringify(gamesList)),
+        currentGame: currentGame ? JSON.parse(JSON.stringify(currentGame)) : null
+      };
+      stateHistory.push(snapshot);
+      if (stateHistory.length > 10) stateHistory.shift(); // Keep last 10 states
+    }
+
+    function triggerUndoPhase() {
+      if (currentUserRole !== 'host') return;
+      if (stateHistory.length === 0) {
+        showNotification('Kein vorheriger Zustand gespeichert!', 'error');
+        return;
+      }
+
+      const previousState = stateHistory.pop();
+      players = previousState.players;
+      gamesList = previousState.gamesList;
+      currentGame = previousState.currentGame;
+
+      renderScoreboard();
+      renderGamesSetupList();
+      drawWheel();
+      showNotification('Letzte Aktion erfolgreich rückgängig gemacht!', 'info');
+    }
+
+    function adjustScore(playerId, amount) {
+      if (currentUserRole !== 'host') return;
+      saveStateForUndo();
+      const p = players.find(x => x.id === playerId);
+      if (p) {
+        p.score = Math.max(0, p.score + amount);
+        renderScoreboard();
+      }
+    }
+
+    function refundJoker(playerId) {
+      if (currentUserRole !== 'host') return;
+      saveStateForUndo();
+      const p = players.find(x => x.id === playerId);
+      if (p) {
+        p.jokersRemaining++;
+        renderScoreboard();
+        showNotification(`Joker für ${p.name} erstattet!`, 'success');
+      }
+    }
+
+    function toggleGameActive(gameId) {
+      if (currentUserRole !== 'host') return;
+      saveStateForUndo();
+      const g = gamesList.find(x => x.id === gameId);
+      if (g) {
+        g.active = !g.active;
+        renderGamesSetupList();
+        drawWheel();
+        showNotification(`Spiel status für '${g.name}' aktualisiert.`, 'info');
+      }
+    }
+
+    /* ==========================================================================
+       MODALS & NOTIFICATIONS
+       ========================================================================== */
+    
+    function openLegendModal() {
+      document.getElementById('legendModal').classList.remove('hidden');
+    }
+
+    function closeLegendModal() {
+      document.getElementById('legendModal').classList.add('hidden');
+    }
+
+    function showNotification(msg, type = 'info') {
+      const toast = document.createElement('div');
+      let bgColor = 'bg-slate-800 border-amber-500 text-amber-300';
+      if (type === 'error') bgColor = 'bg-red-950 border-red-500 text-red-200';
+      if (type === 'success') bgColor = 'bg-emerald-950 border-emerald-500 text-emerald-200';
+
+      toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl border shadow-2xl text-xs font-bold transition transform translate-y-10 opacity-0 ${bgColor}`;
+      toast.innerText = msg;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
 </body>
-</html>
