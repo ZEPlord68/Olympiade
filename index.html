@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaming Olympiade</title>
   
-  <!-- PeerJS für echte Live-Verbindung zwischen verschiedenen Wohnungen -->
+  <!-- PeerJS für direkte Verbindung -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   
   <!-- Google Fonts & Canvas Confetti -->
@@ -41,9 +41,9 @@
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
 
     .btn {
-      padding: 12px 20px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer;
+      padding: 14px 20px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;
-      text-transform: uppercase; font-size: 0.95rem; width: 100%;
+      text-transform: uppercase; font-size: 1rem; width: 100%;
     }
     .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
     .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; }
@@ -118,34 +118,34 @@
 </head>
 <body>
 
-  <!-- STEP 1: HAUPTMENÜ (Raum erstellen oder beitreten) -->
+  <!-- SCHRITT 1: ERSTER BILDSCHIRM - DIE BEIDEN BUTTONS -->
   <div id="screen-main" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
-      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 25px;">Wähle eine Option:</p>
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 25px;">Wähle deine Option:</p>
 
       <div style="display: flex; flex-direction: column; gap: 15px;">
-        <button class="btn btn-gold" style="font-size: 1.1rem; padding: 16px;" onclick="showCreateScreen()">👑 Raum Erstellen</button>
-        <button class="btn btn-green" style="font-size: 1.1rem; padding: 16px;" onclick="showJoinScreen()">👥 Raum Beitreten</button>
+        <button class="btn btn-gold" onclick="showCreateScreen()">👑 Raum Erstellen (Host)</button>
+        <button class="btn btn-green" onclick="showJoinScreen()">👥 Raum Beitreten (Gast)</button>
       </div>
     </div>
   </div>
 
-  <!-- CREATE ROOM SCREEN -->
+  <!-- RAUM ERSTELLEN BILDSCHIRM -->
   <div id="screen-create" class="screen-overlay" style="display: none;">
     <div class="card-box">
       <h1>👑 RAUM ERSTELLEN</h1>
-      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Dein Raum wird generiert...</p>
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Dein Raum-Code wurde generiert:</p>
       <div class="form-group">
-        <label>Dein Raum-Code:</label>
-        <input type="text" id="created-room-code" class="form-control" readonly style="text-align: center; font-size: 1.5rem; color: var(--gold-light); background: #141c28;">
+        <label>Raum-Code (an Freunde schicken):</label>
+        <input type="text" id="created-room-code" class="form-control" readonly style="text-align: center; font-size: 1.6rem; color: var(--gold-light); background: #141c28;">
       </div>
       <button class="btn btn-gold" style="margin-top: 20px;" onclick="initializeHostRoom()">In die Wartelobby ➡️</button>
-      <button class="btn btn-dark" style="margin-top: 10px;" onclick="location.reload()">Zurück</button>
+      <button class="btn btn-dark" style="margin-top: 10px;" onclick="showMainScreen()">Zurück</button>
     </div>
   </div>
 
-  <!-- JOIN ROOM SCREEN -->
+  <!-- RAUM BEITRETEN BILDSCHIRM -->
   <div id="screen-join" class="screen-overlay" style="display: none;">
     <div class="card-box">
       <h1>👥 RAUM BEITRETEN</h1>
@@ -156,11 +156,11 @@
       </div>
       <button class="btn btn-green" style="margin-top: 20px;" onclick="joinHostRoom()">Raum Betreten ➡️</button>
       <div id="join-status" class="status-msg"></div>
-      <button class="btn btn-dark" style="margin-top: 15px;" onclick="location.reload()">Zurück</button>
+      <button class="btn btn-dark" style="margin-top: 10px;" onclick="showMainScreen()">Zurück</button>
     </div>
   </div>
 
-  <!-- STEP 2: WARTELOBBY & PROFIL SETUP -->
+  <!-- SCHRITT 2: WARTELOBBY (NAME & FARBE) -->
   <div id="screen-setup" class="screen-overlay" style="display: none;">
     <div class="card-box" style="max-width: 650px;">
       <h1>🎮 WARTELOBBY</h1>
@@ -169,32 +169,32 @@
       </p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
-        <!-- Profil Einstellungen -->
+        <!-- Profil-Eingabe -->
         <div class="card" style="background: #141c28; margin-bottom:0;">
           <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
           <div class="form-group" style="margin-top:5px;">
             <label>Dein Name:</label>
-            <input type="text" id="input-my-name" class="form-control" placeholder="Name..." oninput="updateMyProfile()">
+            <input type="text" id="input-my-name" class="form-control" placeholder="Dein Name..." oninput="broadcastProfile()">
           </div>
           <div class="form-group">
-            <label>Name & Scoreboard Farbe:</label>
-            <input type="color" id="input-my-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="updateMyProfile()">
+            <label>Deine Namensfarbe:</label>
+            <input type="color" id="input-my-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="broadcastProfile()">
           </div>
         </div>
 
-        <!-- Mitspieler & Admin Panel -->
+        <!-- Mitspieler-Liste -->
         <div class="card" style="background: #141c28; margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
             <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler (<span id="player-count">1</span>)</h3>
             <div id="setup-player-list" style="max-height: 160px; overflow-y: auto;"></div>
           </div>
 
-          <!-- Host Admin Joker Konfiguration -->
+          <!-- Host Admin Panel (Nur Host sieht das) -->
           <div id="host-admin-panel" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
             <label style="color: var(--gold); font-size: 0.85rem; font-weight: 800;">Joker-Verteilung:</label>
             <div style="display: flex; gap: 8px; margin-top: 5px;">
               <div style="flex:1;">
-                <span style="font-size:0.7rem; color:var(--text-dim);">🔥 OP-Joker:</span>
+                <span style="font-size:0.7rem; color:var(--text-dim);">🔥 OP:</span>
                 <input type="number" id="cfg-joker-op" class="form-control" value="1" min="0" max="5" style="padding:4px; text-align:center;">
               </div>
               <div style="flex:1;">
@@ -216,7 +216,7 @@
     </div>
   </div>
 
-  <!-- MAIN APP HEADER -->
+  <!-- MAIN HEADER -->
   <div id="app-header" style="display: none;">
     <header>
       <div class="logo">🎰 OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold);" id="header-room-display"></span></div>
@@ -229,15 +229,12 @@
 
   <!-- MAIN APP BODY -->
   <div id="app-body" class="app-container" style="display: none;">
-    
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="card">
         <div class="card-title">🏆 Scoreboard</div>
         <div id="scoreboard-list"></div>
       </div>
 
-      <!-- Host Controls -->
       <div id="host-panel" class="card host-only" style="margin-top: 20px; border-color: var(--casino-red); display: none;">
         <div class="card-title" style="color: #e74c3c;">👑 Host Steuerung</div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -247,10 +244,7 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-      
-      <!-- Status Banner -->
       <div class="phase-card">
         <div class="phase-title" id="phase-title">Bereit für den ersten Dreh!</div>
         <div class="timer-display" id="timer-display">00:00</div>
@@ -262,7 +256,6 @@
         </div>
       </div>
 
-      <!-- Wheel and Games List -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="card" style="text-align: center;">
           <div class="card-title">🎡 Glücksrad</div>
@@ -280,7 +273,7 @@
     </div>
   </div>
 
-  <!-- JOKER MODAL (20 Sekunde Phase) -->
+  <!-- JOKER MODAL -->
   <div class="modal-overlay" id="joker-modal">
     <div class="modal-box" style="text-align: center;">
       <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 JOKER-PHASE (20s)</h2>
@@ -297,22 +290,6 @@
         </div>
       </div>
       <button class="btn btn-dark" onclick="closeModal('joker-modal')">Weiter ohne Joker</button>
-    </div>
-  </div>
-
-  <!-- MINECRAFT SLOT MODAL -->
-  <div class="modal-overlay" id="slot-modal">
-    <div class="modal-box" style="text-align: center;">
-      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">⛏️ MINECRAFT ERZ-SLOT</h2>
-      <p style="color: var(--text-dim);">Dein Ausgleichs-Vorteil für Minecraft!</p>
-      <div class="slot-machine">
-        <div class="slot-reel" id="reel-1">💎</div>
-        <div class="slot-reel" id="reel-2">🪙</div>
-        <div class="slot-reel" id="reel-3">⚙️</div>
-      </div>
-      <button class="btn btn-gold" style="font-size: 1.2rem;" onclick="spinMinecraftSlot()">🎰 Slot Drehen!</button>
-      <div id="slot-result" style="font-family:'Fredoka One'; font-size: 1.3rem; color: var(--gold-light); margin-top: 15px;"></div>
-      <button class="btn btn-dark" style="margin-top: 15px;" onclick="closeModal('slot-modal')">Schließen</button>
     </div>
   </div>
 
@@ -368,6 +345,12 @@
 
     window.onload = () => { renderLegend(); };
 
+    function showMainScreen() {
+      document.getElementById('screen-create').style.display = 'none';
+      document.getElementById('screen-join').style.display = 'none';
+      document.getElementById('screen-main').style.display = 'flex';
+    }
+
     function showCreateScreen() {
       STATE.roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
       document.getElementById('created-room-code').value = STATE.roomCode;
@@ -402,7 +385,7 @@
       });
 
       peer.on('error', () => {
-        alert('Fehler beim Erstellen des Raumes. Bitte versuche es erneut.');
+        alert('Fehler beim Erstellen des Raumes. Bitte nochmals versuchen.');
       });
     }
 
@@ -631,22 +614,8 @@
     }
 
     function useJoker(type) {
-      const gameTitle = document.getElementById('joker-game-title').textContent;
       closeModal('joker-modal');
-      if (type === 'balance' && gameTitle === 'Minecraft') {
-        openModal('slot-modal');
-      } else {
-        alert(`Joker (${type}) aktiviert!`);
-      }
-    }
-
-    function spinMinecraftSlot() {
-      const symbols = ['💎', '🪙', '⚙️', '🧟'];
-      document.getElementById('reel-1').textContent = symbols[Math.floor(Math.random()*symbols.length)];
-      document.getElementById('reel-2').textContent = symbols[Math.floor(Math.random()*symbols.length)];
-      document.getElementById('reel-3').textContent = symbols[Math.floor(Math.random()*symbols.length)];
-      document.getElementById('slot-result').textContent = '✨ Ausgleichs-Slot gedreht!';
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+      alert(`Joker (${type}) aktiviert!`);
     }
 
     function renderGamesList() {
