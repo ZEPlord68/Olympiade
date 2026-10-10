@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaming Olympiade</title>
   
-  <!-- PeerJS für direkte Verbindung -->
+  <!-- PeerJS -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   
   <!-- Google Fonts & Canvas Confetti -->
@@ -35,7 +35,7 @@
     }
     .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 550px; width: 100%; text-align: center;
+      padding: 30px; max-width: 650px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
@@ -50,7 +50,7 @@
     .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
     .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
     .btn-dark { background: #2c3e50; color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; width: auto; }
 
     .form-group { margin-top: 15px; text-align: left; }
     .form-group label { display: block; font-weight: 800; margin-bottom: 6px; color: var(--gold-light); }
@@ -93,7 +93,6 @@
       border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px;
     }
     .phase-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--gold-light); margin-bottom: 10px; }
-    .timer-display { font-family: 'Fredoka One', cursive; font-size: 3.2rem; color: white; text-shadow: 0 0 10px var(--gold); margin: 10px 0; }
 
     .modal-overlay {
       position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.85);
@@ -104,26 +103,16 @@
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
       padding: 25px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;
     }
-
-    .slot-machine {
-      display: flex; justify-content: center; gap: 15px; background: #000; border: 4px solid var(--gold);
-      border-radius: 15px; padding: 20px; margin: 20px 0;
-    }
-    .slot-reel {
-      width: 80px; height: 100px; background: #1a2332; border-radius: 10px; border: 2px solid var(--card-border);
-      display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-family: 'Fredoka One', cursive; color: white;
-    }
     .status-msg { font-size: 0.9rem; font-weight: 700; color: var(--gold-light); margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <!-- SCHRITT 1: ERSTER BILDSCHIRM - DIE BEIDEN BUTTONS -->
+  <!-- HAUPTMENÜ -->
   <div id="screen-main" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 25px;">Wähle deine Option:</p>
-
       <div style="display: flex; flex-direction: column; gap: 15px;">
         <button class="btn btn-gold" onclick="showCreateScreen()">👑 Raum Erstellen (Host)</button>
         <button class="btn btn-green" onclick="showJoinScreen()">👥 Raum Beitreten (Gast)</button>
@@ -131,7 +120,7 @@
     </div>
   </div>
 
-  <!-- RAUM ERSTELLEN BILDSCHIRM -->
+  <!-- RAUM ERSTELLEN -->
   <div id="screen-create" class="screen-overlay" style="display: none;">
     <div class="card-box">
       <h1>👑 RAUM ERSTELLEN</h1>
@@ -145,7 +134,7 @@
     </div>
   </div>
 
-  <!-- RAUM BEITRETEN BILDSCHIRM -->
+  <!-- RAUM BEITRETEN -->
   <div id="screen-join" class="screen-overlay" style="display: none;">
     <div class="card-box">
       <h1>👥 RAUM BEITRETEN</h1>
@@ -160,53 +149,33 @@
     </div>
   </div>
 
-  <!-- SCHRITT 2: WARTELOBBY (NAME & FARBE) -->
+  <!-- WARTELOBBY (Mit individueller Joker-Verteilung) -->
   <div id="screen-setup" class="screen-overlay" style="display: none;">
-    <div class="card-box" style="max-width: 650px;">
+    <div class="card-box" style="max-width: 750px;">
       <h1>🎮 WARTELOBBY</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">
         Raum-Code: <span id="setup-room-code" style="color: var(--gold);"></span> | Rolle: <span id="setup-role-label" style="color: var(--gold-light);"></span>
       </p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
-        <!-- Profil-Eingabe -->
         <div class="card" style="background: #141c28; margin-bottom:0;">
           <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
           <div class="form-group" style="margin-top:5px;">
             <label>Dein Name:</label>
-            <input type="text" id="input-my-name" class="form-control" placeholder="Dein Name..." oninput="broadcastProfile()">
+            <input type="text" id="input-my-name" class="form-control" placeholder="Name..." oninput="broadcastProfile()">
           </div>
           <div class="form-group">
-            <label>Deine Namensfarbe:</label>
+            <label>Namensfarbe:</label>
             <input type="color" id="input-my-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="broadcastProfile()">
           </div>
         </div>
 
-        <!-- Mitspieler-Liste -->
-        <div class="card" style="background: #141c28; margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler (<span id="player-count">1</span>)</h3>
-            <div id="setup-player-list" style="max-height: 160px; overflow-y: auto;"></div>
-          </div>
-
-          <!-- Host Admin Panel (Nur Host sieht das) -->
-          <div id="host-admin-panel" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
-            <label style="color: var(--gold); font-size: 0.85rem; font-weight: 800;">Joker-Verteilung:</label>
-            <div style="display: flex; gap: 8px; margin-top: 5px;">
-              <div style="flex:1;">
-                <span style="font-size:0.7rem; color:var(--text-dim);">🔥 OP:</span>
-                <input type="number" id="cfg-joker-op" class="form-control" value="1" min="0" max="5" style="padding:4px; text-align:center;">
-              </div>
-              <div style="flex:1;">
-                <span style="font-size:0.7rem; color:var(--text-dim);">⚖️ Ausgleich:</span>
-                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:4px; text-align:center;">
-              </div>
-            </div>
-          </div>
+        <div class="card" style="background: #141c28; margin-bottom:0;">
+          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler & Joker-Zuteilung</h3>
+          <div id="setup-player-list" style="max-height: 220px; overflow-y: auto;"></div>
         </div>
       </div>
 
-      <!-- Start Button (Nur Host) -->
       <div id="host-start-container" style="display: none;">
         <button class="btn btn-green" style="font-size: 1.2rem;" onclick="startOlympiade()">🚀 OLYMPIADE STARTEN!</button>
       </div>
@@ -247,12 +216,9 @@
     <div class="main-content">
       <div class="phase-card">
         <div class="phase-title" id="phase-title">Bereit für den ersten Dreh!</div>
-        <div class="timer-display" id="timer-display">00:00</div>
         
         <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;" class="host-only" style="display: none;">
           <button class="btn btn-gold" onclick="triggerHostSpin()">🎡 Rad Drehen!</button>
-          <button class="btn btn-blue" onclick="toggleTimer()">⏯️ Timer Start</button>
-          <button class="btn btn-dark" onclick="resetTimer()">⏱️ Reset</button>
         </div>
       </div>
 
@@ -273,23 +239,31 @@
     </div>
   </div>
 
-  <!-- JOKER MODAL -->
+  <!-- JOKER AUSWAHL MODAL (20 Sekunde Phase) -->
   <div class="modal-overlay" id="joker-modal">
     <div class="modal-box" style="text-align: center;">
-      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 JOKER-PHASE (20s)</h2>
+      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 WÄHLE DEINEN JOKER</h2>
       <p id="joker-game-title" style="font-size: 1.3rem; font-weight: 800; color: #2ecc71; margin: 10px 0;"></p>
-      <div style="margin: 20px 0; text-align: left;">
-        <div class="card" style="margin-bottom: 12px; background: #141c28;">
-          <h4 style="color: var(--gold);">🔥 OP-Joker (Punkte verdoppeln)</h4>
-          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('op')">OP-Joker Einsetzen</button>
-        </div>
-        <div class="card" id="balance-card" style="background: #141c28;">
-          <h4 style="color: #2ecc71;">⚖️ Ausgleichs-Joker</h4>
-          <p id="balance-desc" style="font-size: 0.85rem; color: var(--text-dim); margin: 6px 0;"></p>
-          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Ausgleichs-Joker Einsetzen</button>
-        </div>
+      <p style="color: var(--text-dim); margin-bottom: 15px;">Du hast noch: <span id="my-avail-op" style="color:var(--gold); font-weight:800;">0</span>x OP | <span id="my-avail-bal" style="color:var(--gold); font-weight:800;">0</span>x Ausgleich</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <button class="btn btn-gold" onclick="submitJokerChoice('op')">🔥 OP-Joker einsetzen (Punkte verdoppeln)</button>
+        <button class="btn btn-green" id="btn-balance-choice" onclick="submitJokerChoice('balance')">⚖️ Ausgleichs-Joker einsetzen</button>
+        <button class="btn btn-dark" onclick="submitJokerChoice('none')">❌ Ohne Joker spielen</button>
       </div>
-      <button class="btn btn-dark" onclick="closeModal('joker-modal')">Weiter ohne Joker</button>
+      <div id="joker-wait-msg" style="font-weight: 800; color: var(--gold-light);"></div>
+    </div>
+  </div>
+
+  <!-- REVEAL MODAL (Zeigt an, wer welchen Joker gewählt hat) -->
+  <div class="modal-overlay" id="reveal-modal">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🔍 JOKER-REVEAL</h2>
+      <p style="color: var(--text-dim); margin-bottom: 20px;">Das haben die Spieler für diese Runde gewählt:</p>
+      
+      <div id="reveal-results-list" style="text-align: left; margin-bottom: 20px; max-height: 250px; overflow-y: auto;"></div>
+      
+      <button class="btn btn-gold" onclick="closeModal('reveal-modal')">Verstanden & Spiel starten!</button>
     </div>
   </div>
 
@@ -342,6 +316,7 @@
 
     let activeGames = [...GAMES];
     let playersMap = {};
+    let roundChoices = {};
 
     window.onload = () => { renderLegend(); };
 
@@ -385,7 +360,7 @@
       });
 
       peer.on('error', () => {
-        alert('Fehler beim Erstellen des Raumes. Bitte nochmals versuchen.');
+        alert('Fehler beim Erstellen des Raumes.');
       });
     }
 
@@ -429,7 +404,6 @@
       if (STATE.role === 'host') {
         document.getElementById('host-start-container').style.display = 'block';
         document.getElementById('guest-wait-container').style.display = 'none';
-        document.getElementById('host-admin-panel').style.display = 'block';
       }
 
       renderSetupPlayersList();
@@ -455,6 +429,16 @@
       }
     }
 
+    function updatePlayerJokers(pid, type, val) {
+      if (STATE.role !== 'host') return;
+      const v = parseInt(val) || 0;
+      if (playersMap[pid]) {
+        if (type === 'op') playersMap[pid].jokersHigh = v;
+        if (type === 'bal') playersMap[pid].jokersBal = v;
+        broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+      }
+    }
+
     function broadcastData(data) {
       if (STATE.role === 'host') {
         guestConns.forEach(conn => { if (conn.open) conn.send(data); });
@@ -465,6 +449,11 @@
 
     function handleIncomingData(data) {
       if (data.type === 'UPDATE_PROFILE') {
+        const existing = playersMap[data.player.id];
+        if (existing) {
+          data.player.jokersHigh = existing.jokersHigh;
+          data.player.jokersBal = existing.jokersBal;
+        }
         playersMap[data.player.id] = data.player;
         if (STATE.role === 'host') {
           broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
@@ -472,7 +461,13 @@
         }
       } else if (data.type === 'SYNC_PLAYERS') {
         playersMap = {};
-        data.players.forEach(p => playersMap[p.id] = p);
+        data.players.forEach(p => {
+          playersMap[p.id] = p;
+          if (p.id === STATE.myPlayerId) {
+            STATE.jokersHigh = p.jokersHigh;
+            STATE.jokersBal = p.jokersBal;
+          }
+        });
         renderSetupPlayersList();
         renderScoreboard(Object.values(playersMap));
       } else if (data.type === 'START_GAME') {
@@ -485,34 +480,50 @@
           document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
           openJokerModal(game);
         }
-      } else if (data.type === 'UPDATE_TIMER') {
-        updateTimerDisplay(data.sec);
+      } else if (data.type === 'JOKER_CHOICE') {
+        if (STATE.role === 'host') {
+          roundChoices[data.playerId] = data.choice;
+          const allIds = Object.keys(playersMap);
+          if (Object.keys(roundChoices).length >= allIds.length) {
+            broadcastData({ type: 'REVEAL_JOKERS', choices: roundChoices });
+            showRevealModal(roundChoices);
+            roundChoices = {};
+          }
+        }
+      } else if (data.type === 'REVEAL_JOKERS') {
+        showRevealModal(data.choices);
       }
     }
 
     function renderSetupPlayersList() {
       const list = document.getElementById('setup-player-list');
       const playersArr = Object.values(playersMap);
-      document.getElementById('player-count').textContent = playersArr.length;
       list.innerHTML = '';
       playersArr.forEach(p => {
+        let hostControls = '';
+        if (STATE.role === 'host') {
+          hostControls = `
+            <div style="display:flex; gap:5px; margin-top:4px; align-items:center;">
+              <span style="font-size:0.7rem; color:var(--text-dim);">OP:</span>
+              <input type="number" value="${p.jokersHigh}" min="0" max="5" style="width:40px; padding:2px; text-align:center; background:#0f141d; color:#fff; border:1px solid #2c3e50; border-radius:4px;" onchange="updatePlayerJokers('${p.id}', 'op', this.value)">
+              <span style="font-size:0.7rem; color:var(--text-dim);">Bal:</span>
+              <input type="number" value="${p.jokersBal}" min="0" max="5" style="width:40px; padding:2px; text-align:center; background:#0f141d; color:#fff; border:1px solid #2c3e50; border-radius:4px;" onchange="updatePlayerJokers('${p.id}', 'bal', this.value)">
+            </div>
+          `;
+        }
+
         list.innerHTML += `
-          <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:6px; padding:8px;">
-            <div class="player-name" style="font-size:0.95rem; color:${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
+          <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:6px; padding:8px; display:block;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="player-name" style="font-size:0.95rem; color:${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
+            </div>
+            ${hostControls}
           </div>
         `;
       });
     }
 
     function startOlympiade() {
-      const opCount = parseInt(document.getElementById('cfg-joker-op').value) || 1;
-      const balCount = parseInt(document.getElementById('cfg-joker-bal').value) || 1;
-
-      Object.values(playersMap).forEach(p => {
-        p.jokersHigh = opCount;
-        p.jokersBal = balCount;
-      });
-
       broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
       broadcastData({ type: 'START_GAME' });
       enterMainApp();
@@ -603,19 +614,65 @@
 
     function openJokerModal(game) {
       document.getElementById('joker-game-title').textContent = game.name;
-      const card = document.getElementById('balance-card');
+      document.getElementById('my-avail-op').textContent = STATE.jokersHigh;
+      document.getElementById('my-avail-bal').textContent = STATE.jokersBal;
+      
+      const balBtn = document.getElementById('btn-balance-choice');
       if (game.hasBalance) {
-        card.style.display = 'block';
-        document.getElementById('balance-desc').textContent = game.desc;
+        balBtn.style.display = 'inline-flex';
       } else {
-        card.style.display = 'none';
+        balBtn.style.display = 'none';
       }
+      document.getElementById('joker-wait-msg').textContent = '';
       openModal('joker-modal');
     }
 
-    function useJoker(type) {
+    function submitJokerChoice(type) {
+      if (type === 'op' && STATE.jokersHigh <= 0) { alert('Du hast keine OP-Joker mehr!'); return; }
+      if (type === 'balance' && STATE.jokersBal <= 0) { alert('Du hast keine Ausgleichs-Joker mehr!'); return; }
+
+      if (type === 'op') STATE.jokersHigh--;
+      if (type === 'balance') STATE.jokersBal--;
+
+      broadcastData({ type: 'JOKER_CHOICE', playerId: STATE.myPlayerId, choice: type });
+      document.getElementById('joker-wait-msg').textContent = '✅ Gewählt! Warten auf andere Spieler...';
+
+      if (STATE.role === 'host') {
+        roundChoices[STATE.myPlayerId] = type;
+        const allIds = Object.keys(playersMap);
+        if (Object.keys(roundChoices).length >= allIds.length) {
+          broadcastData({ type: 'REVEAL_JOKERS', choices: roundChoices });
+          showRevealModal(roundChoices);
+          roundChoices = {};
+        }
+      }
+    }
+
+    function showRevealModal(choices) {
       closeModal('joker-modal');
-      alert(`Joker (${type}) aktiviert!`);
+      const list = document.getElementById('reveal-results-list');
+      list.innerHTML = '';
+
+      Object.keys(choices).forEach(pid => {
+        const player = playersMap[pid];
+        const choice = choices[pid];
+        const pName = player ? player.name : 'Spieler';
+        const pColor = player ? player.color : '#fff';
+
+        let choiceText = '❌ Ohne Joker';
+        if (choice === 'op') choiceText = '🔥 OP-Joker (Punkte verdoppeln)';
+        if (choice === 'balance') choiceText = '⚖️ Ausgleichs-Joker';
+
+        list.innerHTML += `
+          <div class="player-card" style="border-left: 4px solid ${pColor}; margin-bottom: 8px;">
+            <span style="font-weight:800; color:${pColor};">${pName}</span>
+            <span style="font-weight:700;">${choiceText}</span>
+          </div>
+        `;
+      });
+
+      openModal('reveal-modal');
+      confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
     }
 
     function renderGamesList() {
@@ -627,8 +684,8 @@
         list.innerHTML += `
           <div class="player-card" style="opacity: ${isActive ? '1' : '0.4'};">
             <div><strong>${g.name}</strong> ${g.hasBalance ? '🟢' : '🔴'}</div>
-            <button class="btn btn-red btn-sm host-only" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'}; width:auto;" onclick="toggleGame('${g.id}')">
-              ${isActive ? '❌ Entfernen' : '➕'}
+            <button class="btn btn-red btn-sm host-only" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'};" onclick="toggleGame('${g.id}')">
+              ${isActive ? '❌' : '➕'}
             </button>
           </div>
         `;
@@ -650,33 +707,6 @@
       if (confirm('Spiel abbrechen?')) {
         document.getElementById('phase-title').textContent = 'Spiel abgebrochen';
       }
-    }
-
-    function toggleTimer() {
-      broadcastData({ type: 'UPDATE_TIMER', sec: 2400 });
-      updateTimerDisplay(2400);
-    }
-
-    function resetTimer() {
-      broadcastData({ type: 'UPDATE_TIMER', sec: 0 });
-      updateTimerDisplay(0);
-    }
-
-    function updateTimerDisplay(sec) {
-      const display = document.getElementById('timer-display');
-      if (!display) return;
-      const m = String(Math.floor(sec / 60)).padStart(2, '0');
-      const s = String(sec % 60).padStart(2, '0');
-      display.textContent = `${m}:${s}`;
-    }
-
-    function renderLegend() {
-      const container = document.getElementById('legend-content');
-      if (!container) return;
-      container.innerHTML = '';
-      GAMES.forEach(g => {
-        container.innerHTML += `<div style="margin-bottom:10px;"><h4 style="color:var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4><p style="font-size:0.9rem; color:var(--text-dim);">${g.desc}</p></div>`;
-      });
     }
 
     function openScoreEditModal() {
