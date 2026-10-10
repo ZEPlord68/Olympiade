@@ -157,19 +157,19 @@
         <button class="btn btn-green" style="flex:1;" onclick="switchLoginTab('player')">👤 Gast beitreten</button>
       </div>
 
-      <!-- Host Form -->
+      <!-- Host Form (mit leerem PIN und leerem Raumnamen) -->
       <div id="tab-host" style="text-align: left;">
         <div class="form-group">
-          <label>Raum-Name (identisch für alle):</label>
-          <input type="text" id="host-room-input" class="form-control" value="DISCORD26" style="text-transform: uppercase;">
+          <label>Raum-Name eingeben:</label>
+          <input type="text" id="host-room-input" class="form-control" placeholder="z.B. OLYMPIA26" style="text-transform: uppercase;">
         </div>
         <div class="form-group">
-          <label>Host PIN-Code (Standard: 1234):</label>
-          <input type="password" id="host-pin-input" class="form-control" value="1234" maxlength="4">
+          <label>Host PIN-Code (1234):</label>
+          <input type="password" id="host-pin-input" class="form-control" placeholder="****" maxlength="4">
         </div>
         <div class="form-group">
           <label>Dein Name:</label>
-          <input type="text" id="host-name-input" class="form-control" value="Spielleiter">
+          <input type="text" id="host-name-input" class="form-control" placeholder="Dein Name...">
         </div>
         <div class="form-group">
           <label>Wähle deine Farbe:</label>
@@ -179,14 +179,14 @@
           <label>Wähle deinen Avatar:</label>
           <div class="avatar-grid" id="host-avatar-grid"></div>
         </div>
-        <button class="btn btn-gold" style="width: 100%; margin-top: 20px;" onclick="loginAsHost()">Raum Betreten 🚀</button>
+        <button class="btn btn-gold" style="width: 100%; margin-top: 20px;" onclick="loginAsHost()">Raum Erstellen 🚀</button>
       </div>
 
-      <!-- Player Form -->
+      <!-- Player Form (ohne PIN, nur Raumname) -->
       <div id="tab-player" style="text-align: left; display: none;">
         <div class="form-group">
           <label>Raum-Name (vom Host vorgegeben):</label>
-          <input type="text" id="player-room-input" class="form-control" placeholder="z.B. DISCORD26" style="text-transform: uppercase;">
+          <input type="text" id="player-room-input" class="form-control" placeholder="z.B. OLYMPIA26" style="text-transform: uppercase;">
         </div>
         <div class="form-group">
           <label>Dein Name:</label>
@@ -403,11 +403,12 @@
     function loginAsHost() {
       const code = document.getElementById('host-room-input').value.trim().toUpperCase();
       const pin = document.getElementById('host-pin-input').value;
-      const name = document.getElementById('host-name-input').value.trim() || 'Spielleiter';
+      const name = document.getElementById('host-name-input').value.trim();
       const color = document.getElementById('host-color-input').value;
 
       if (pin !== '1234') { alert('Falscher PIN! (Standard: 1234)'); return; }
       if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
+      if (!name) { alert('Bitte deinen Namen eingeben!'); return; }
 
       STATE.role = 'host';
       STATE.roomCode = code;
@@ -421,10 +422,11 @@
 
     function loginAsPlayer() {
       const code = document.getElementById('player-room-input').value.trim().toUpperCase();
-      const name = document.getElementById('player-name-input').value.trim() || 'Gast';
+      const name = document.getElementById('player-name-input').value.trim();
       const color = document.getElementById('player-color-input').value;
 
       if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
+      if (!name) { alert('Bitte deinen Namen eingeben!'); return; }
 
       STATE.role = 'player';
       STATE.roomCode = code;
