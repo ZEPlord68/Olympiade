@@ -102,7 +102,7 @@
     .modal-overlay.active { display: flex; }
     .modal-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 25px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;
+      padding: 25px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto;
     }
     .status-msg { font-size: 0.9rem; font-weight: 700; color: var(--gold-light); margin-top: 10px; }
 
@@ -112,6 +112,16 @@
       background: #2c3e50; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
     .joker-btn:hover { background: var(--gold); color: black; }
+
+    /* Slot Machine Styling */
+    .slot-row { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+    .slot-col { text-align: center; }
+    .slot-col-label { font-size: 0.75rem; color: var(--gold-light); font-weight: 800; margin-bottom: 4px; }
+    .slot-reel {
+      width: 90px; height: 110px; background: #0f141d; border-radius: 12px; border: 3px solid var(--gold);
+      display: flex; align-items: center; justify-content: center; font-size: 2rem; font-family: 'Fredoka One', cursive; color: white;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    }
   </style>
 </head>
 <body>
@@ -193,11 +203,12 @@
     </div>
   </div>
 
-  <!-- MAIN HEADER -->
+  <!-- MAIN HEADER (Mit neuen Optionen oben rechts) -->
   <div id="app-header" style="display: none;">
     <header>
       <div class="logo">🎰 OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold);" id="header-room-display"></span></div>
       <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-gold btn-sm" onclick="openModal('slots-modal')">🎰 Slots & Würfel</button>
         <button class="btn btn-dark btn-sm" onclick="openModal('legend-modal')">📖 Joker-Legende</button>
         <span id="role-badge" class="btn btn-sm btn-green">Gast</span>
       </div>
@@ -206,7 +217,7 @@
 
   <!-- MAIN APP BODY -->
   <div id="app-body" class="app-container" style="display: none;">
-    <!-- SIDEBAR LEFT (LINKS) - IMMER SICHTBAR -->
+    <!-- SIDEBAR LEFT -->
     <div class="sidebar">
       <div class="card">
         <div class="card-title">🏆 Scoreboard & Joker</div>
@@ -246,6 +257,63 @@
           <div id="setup-game-list" style="max-height: 280px; overflow-y: auto;"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- SLOTS & WÜRFEL MODAL -->
+  <div class="modal-overlay" id="slots-modal">
+    <div class="modal-box">
+      <div class="card-title">🎰 Slots & Zufalls-Tools</div>
+      
+      <!-- Minecraft Slot -->
+      <div class="card" style="background: #141c28; margin-bottom: 15px; text-align: center;">
+        <h3 style="color: #2ecc71; margin-bottom: 5px;">⛏️ Minecraft-Slotmaschine</h3>
+        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">Mögliche Werte — Eisen: 1-10 | Redstone: 1-5 | Diamanten: 0-3</p>
+        
+        <div class="slot-row">
+          <div class="slot-col">
+            <div class="slot-col-label">Eisen (1-10)</div>
+            <div class="slot-reel" id="mc-reel-1">⛏️</div>
+          </div>
+          <div class="slot-col">
+            <div class="slot-col-label">Redstone (1-5)</div>
+            <div class="slot-reel" id="mc-reel-2">🔴</div>
+          </div>
+          <div class="slot-col">
+            <div class="slot-col-label">Diamanten (0-3)</div>
+            <div class="slot-reel" id="mc-reel-3">💎</div>
+          </div>
+        </div>
+        <button class="btn btn-green btn-sm" style="width: 100%; margin-top: 5px;" onclick="spinMinecraftSlot()">⛏️ Minecraft Slot Drehen!</button>
+        <div id="mc-slot-result" style="font-family:'Fredoka One'; font-size: 1.1rem; color: var(--gold-light); margin-top: 8px;"></div>
+      </div>
+
+      <!-- Dice Slot -->
+      <div class="card" style="background: #141c28; margin-bottom: 15px; text-align: center;">
+        <h3 style="color: var(--gold-light); margin-bottom: 5px;">🎲 Slot-Würfel</h3>
+        <div style="display: flex; justify-content: center; gap: 10px; align-items: center; margin-bottom: 10px;">
+          <label style="font-size: 0.85rem; font-weight: 800;">Anzahl Würfel:</label>
+          <select id="dice-count" class="form-control" style="width: 90px; padding: 6px; font-size: 1rem;">
+            <option value="1">1 Würfel</option>
+            <option value="2" selected>2 Würfel</option>
+          </select>
+        </div>
+
+        <div class="slot-row" id="dice-container">
+          <div class="slot-col">
+            <div class="slot-col-label">Würfel 1</div>
+            <div class="slot-reel" id="dice-reel-1">🎲</div>
+          </div>
+          <div class="slot-col" id="dice-col-2">
+            <div class="slot-col-label">Würfel 2</div>
+            <div class="slot-reel" id="dice-reel-2">🎲</div>
+          </div>
+        </div>
+        <button class="btn btn-gold btn-sm" style="width: 100%; margin-top: 5px;" onclick="spinDiceSlot()">🎲 Würfel im Slot-Stil werfen!</button>
+        <div id="dice-slot-result" style="font-family:'Fredoka One'; font-size: 1.2rem; color: var(--gold-light); margin-top: 8px;"></div>
+      </div>
+
+      <button class="btn btn-dark" style="width: 100%;" onclick="closeModal('slots-modal')">Schließen</button>
     </div>
   </div>
 
@@ -623,7 +691,6 @@
     }
 
     function triggerHostSpin() {
-      // Mindestens 10 volle Umdrehungen (10 * 360 = 3600 Grad) + zufälliger neuer Endwinkel
       const randomExtra = Math.floor(Math.random() * 360);
       currentWheelRotation += 3600 + randomExtra;
       broadcastData({ type: 'SPIN_WHEEL', rot: currentWheelRotation });
@@ -643,7 +710,7 @@
           document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
           openJokerModal(game);
         }
-      }, 6000); // 6 Sekunden Drehzeit für maximale Spannung
+      }, 6000);
     }
 
     function openJokerModal(game) {
@@ -719,6 +786,39 @@
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
     }
 
+    function spinMinecraftSlot() {
+      const iron = Math.floor(Math.random() * 10) + 1;
+      const redstone = Math.floor(Math.random() * 5) + 1;
+      const diamond = Math.floor(Math.random() * 4); // 0 bis 3
+
+      document.getElementById('mc-reel-1').textContent = `⛏️${iron}`;
+      document.getElementById('mc-reel-2').textContent = `🔴${redstone}`;
+      document.getElementById('mc-reel-3').textContent = `💎${diamond}`;
+      document.getElementById('mc-slot-result').textContent = `Ergebnis: ${iron} Eisen | ${redstone} Redstone | ${diamond} Diamanten`;
+      confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+    }
+
+    function spinDiceSlot() {
+      const count = parseInt(document.getElementById('dice-count').value);
+      const col2 = document.getElementById('dice-col-2');
+      
+      const d1 = Math.floor(Math.random() * 6) + 1;
+      document.getElementById('dice-reel-1').textContent = `🎲${d1}`;
+
+      let sum = d1;
+      if (count === 2) {
+        col2.style.display = 'block';
+        const d2 = Math.floor(Math.random() * 6) + 1;
+        document.getElementById('dice-reel-2').textContent = `🎲${d2}`;
+        sum += d2;
+      } else {
+        col2.style.display = 'none';
+      }
+
+      document.getElementById('dice-slot-result').textContent = `Gesamtergebnis: ${sum}`;
+      confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+    }
+
     function renderGamesList() {
       const list = document.getElementById('setup-game-list');
       if (!list) return;
@@ -773,6 +873,15 @@
       broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
       renderScoreboard(Object.values(playersMap));
       closeModal('score-modal');
+    }
+
+    function renderLegend() {
+      const container = document.getElementById('legend-content');
+      if (!container) return;
+      container.innerHTML = '';
+      GAMES.forEach(g => {
+        container.innerHTML += `<div style="margin-bottom:10px;"><h4 style="color:var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4><p style="font-size:0.9rem; color:var(--text-dim);">${g.desc}</p></div>`;
+      });
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
