@@ -62,15 +62,14 @@
 
     .avatar-grid {
       display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-      max-height: 150px; overflow-y: auto; padding: 8px; margin-top: 8px;
+      max-height: 140px; overflow-y: auto; padding: 8px; margin-top: 8px;
       background: #0f141d; border-radius: 10px; border: 1px solid var(--card-border);
     }
     .avatar-item {
       aspect-ratio: 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer;
-      background: #1e2738; padding: 4px; transition: all 0.2s ease; position: relative;
+      background: #1e2738; padding: 4px; transition: all 0.2s ease;
     }
     .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
-    .avatar-item.taken { opacity: 0.25; cursor: not-allowed; filter: grayscale(1); }
     .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
     header {
@@ -132,29 +131,29 @@
 </head>
 <body>
 
-  <!-- STEP 1: ONLY ROOM NAME -->
+  <!-- STEP 1: SCHRITT 1 - NUR RAUMNAME EINGEBEN -->
   <div id="screen-room" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Gib den Raumnamen ein:</p>
       <div class="form-group">
-        <label>Raum-Name:</label>
-        <input type="text" id="input-room-name" class="form-control" placeholder="z.B. DISCORD26" style="text-transform: uppercase;">
+        <label>Raumname (z.B. 4444):</label>
+        <input type="text" id="input-room-name" class="form-control" placeholder="z.B. 4444" style="text-transform: uppercase;">
       </div>
-      <button class="btn btn-gold" style="margin-top: 25px;" onclick="enterRoomSetup()">Raum Betreten ➡️</button>
+      <button class="btn btn-gold" style="margin-top: 25px;" onclick="enterRoom()">Raum Betreten ➡️</button>
     </div>
   </div>
 
-  <!-- STEP 2: PROFILE SETUP & LOBBY -->
+  <!-- STEP 2: WARTELOBBY & PROFIL-SETUP -->
   <div id="screen-setup" class="screen-overlay" style="display: none;">
-    <div class="card-box" style="max-width: 650px;">
+    <div class="card-box" style="max-width: 700px;">
       <h1>🎮 WARTELOBBY</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">
-        Raum: <span id="setup-room-display" style="color: var(--gold);"></span>
+        Raum-Code: <span id="setup-room-display" style="color: var(--gold);"></span> | Rolle: <span id="setup-role-display" style="color: var(--gold-light);"></span>
       </p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
-        <!-- Profile Config -->
+        <!-- Eigenes Profil -->
         <div class="card" style="background: #141c28; margin-bottom:0;">
           <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
           <div class="form-group" style="margin-top:5px;">
@@ -171,36 +170,36 @@
           </div>
         </div>
 
-        <!-- Players List & Host Settings -->
+        <!-- Spielerliste & Host Admin Panel -->
         <div class="card" style="background: #141c28; margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
             <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler im Raum</h3>
             <div id="setup-player-list" style="max-height: 180px; overflow-y: auto;"></div>
           </div>
 
-          <!-- Host Joker Config -->
-          <div id="host-joker-config" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
-            <label style="color: var(--gold); font-size: 0.9rem; font-weight: 800;">Joker-Startanzahl:</label>
+          <!-- Host Joker Setup -->
+          <div id="host-admin-box" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
+            <label style="color: var(--gold); font-size: 0.9rem; font-weight: 800;">Standard-Joker pro Spieler:</label>
             <div style="display: flex; gap: 10px; margin-top: 5px;">
               <div style="flex:1;">
-                <span style="font-size:0.75rem; color:var(--text-dim);">🔥 High:</span>
-                <input type="number" id="cfg-joker-high" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomConfig()">
+                <span style="font-size:0.75rem; color:var(--text-dim);">🔥 OP-Joker:</span>
+                <input type="number" id="cfg-joker-high" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomSettings()">
               </div>
               <div style="flex:1;">
-                <span style="font-size:0.75rem; color:var(--text-dim);">⚖️ Bal:</span>
-                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomConfig()">
+                <span style="font-size:0.75rem; color:var(--text-dim);">⚖️ Ausgleich:</span>
+                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomSettings()">
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Start Button for Host -->
+      <!-- Start Button (Nur Host) -->
       <div id="host-start-container" style="display: none;">
         <button class="btn btn-green" style="font-size: 1.2rem;" onclick="startOlympiade()">🚀 OLYMPIADE JETZT STARTEN!</button>
       </div>
       <div id="guest-wait-container">
-        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host startet...</p>
+        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host das Spiel startet...</p>
       </div>
     </div>
   </div>
@@ -276,13 +275,13 @@
       <p id="joker-game-title" style="font-size: 1.3rem; font-weight: 800; color: #2ecc71; margin: 10px 0;"></p>
       <div style="margin: 20px 0; text-align: left;">
         <div class="card" style="margin-bottom: 12px; background: #141c28;">
-          <h4 style="color: var(--gold);">🔥 High-Stakes Joker</h4>
-          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('high_stakes')">Aktivieren</button>
+          <h4 style="color: var(--gold);">🔥 OP-Joker (Punkte verdoppeln)</h4>
+          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('op')">OP-Joker Einsetzen</button>
         </div>
         <div class="card" id="balance-card" style="background: #141c28;">
           <h4 style="color: #2ecc71;">⚖️ Ausgleichs-Joker</h4>
           <p id="balance-desc" style="font-size: 0.85rem; color: var(--text-dim); margin: 6px 0;"></p>
-          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Aktivieren</button>
+          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Ausgleichs-Joker Einsetzen</button>
         </div>
       </div>
       <button class="btn btn-dark" onclick="closeModal('joker-modal')">Weiter ohne Joker</button>
@@ -336,7 +335,7 @@
       role: 'player',
       roomCode: '',
       myPlayerId: 'p_' + Math.random().toString(36).substring(2, 9),
-      myName: 'Spieler ' + Math.floor(Math.random()*100),
+      myName: 'Spieler ' + Math.floor(Math.random()*900 + 100),
       myAvatar: 0,
       myColor: '#3498db',
       score: 0,
@@ -374,13 +373,11 @@
       </svg>`;
     }
 
-    window.onload = () => {
-      renderLegend();
-    };
+    window.onload = () => { renderLegend(); };
 
-    async function enterRoomSetup() {
+    async function enterRoom() {
       const code = document.getElementById('input-room-name').value.trim().toUpperCase();
-      if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
+      if (!code) { alert('Bitte Raumname eingeben!'); return; }
 
       STATE.roomCode = code;
       const roomRef = db.collection('rooms').doc(code);
@@ -388,6 +385,7 @@
       try {
         const roomDoc = await roomRef.get();
         if (!roomDoc.exists) {
+          // Erster im Raum -> Host
           STATE.role = 'host';
           await roomRef.set({
             createdAt: Date.now(),
@@ -399,6 +397,7 @@
             timerSec: 0
           });
         } else {
+          // Zweiter/Dritter im Raum -> Gast
           STATE.role = 'player';
           const data = roomDoc.data();
           STATE.jokersHigh = data.jokerHighCfg || 1;
@@ -415,15 +414,16 @@
       document.getElementById('screen-room').style.display = 'none';
       document.getElementById('screen-setup').style.display = 'flex';
       document.getElementById('setup-room-display').textContent = code;
+      document.getElementById('setup-role-display').textContent = STATE.role === 'host' ? '👑 Host (Admin)' : '👤 Gast';
 
       if (STATE.role === 'host') {
         document.getElementById('host-start-container').style.display = 'block';
         document.getElementById('guest-wait-container').style.display = 'none';
-        document.getElementById('host-joker-config').style.display = 'block';
+        document.getElementById('host-admin-box').style.display = 'block';
       }
 
-      // Save initial profile
-      await db.collection('rooms').doc(code).collection('players').doc(STATE.myPlayerId).set({
+      // In Firestore registrieren
+      await roomRef.collection('players').doc(STATE.myPlayerId).set({
         id: STATE.myPlayerId,
         name: STATE.myName,
         avatar: STATE.myAvatar,
@@ -471,12 +471,10 @@
     function renderSetupAvatarGrid() {
       const grid = document.getElementById('setup-avatar-grid');
       grid.innerHTML = '';
-      
-      // Finde alle bereits vergebenen Avatare von ANDEREN Spielern
-      const takenAvatars = allRoomPlayers.filter(p => p.id !== STATE.myPlayerId).map(p => p.avatar);
+      const taken = allRoomPlayers.filter(p => p.id !== STATE.myPlayerId).map(p => p.avatar);
 
       SPONGEBOB_AVATARS.forEach(id => {
-        const isTaken = takenAvatars.includes(id);
+        const isTaken = taken.includes(id);
         const div = document.createElement('div');
         div.className = `avatar-item ${STATE.myAvatar === id ? 'selected' : ''} ${isTaken ? 'taken' : ''}`;
         div.innerHTML = getFishAvatarSVG(id);
@@ -522,7 +520,7 @@
       });
     }
 
-    async function updateRoomConfig() {
+    async function updateRoomSettings() {
       if (STATE.role !== 'host') return;
       const high = parseInt(document.getElementById('cfg-joker-high').value) || 1;
       const bal = parseInt(document.getElementById('cfg-joker-bal').value) || 1;
@@ -566,7 +564,7 @@
               <div>
                 <div class="player-name" style="color: ${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
                 <div style="display:flex; gap:4px; margin-top:2px;">
-                  <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 High</span>
+                  <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 OP</span>
                   <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal</span>
                 </div>
               </div>
