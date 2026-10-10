@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaming Olympiade - Wartelobby</title>
   
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  
   <!-- Google Fonts & Canvas Confetti -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -72,7 +68,6 @@
     .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
     .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
-    /* Header & App Layout */
     header {
       background: #1a2332; border-bottom: 3px solid var(--gold); padding: 12px 25px;
       display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;
@@ -95,7 +90,6 @@
     .joker-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; background: #2c3e50; }
     .joker-pill.active { background: var(--gold); color: #000; }
 
-    /* Wheel Area */
     .wheel-container { position: relative; width: 320px; height: 320px; margin: 0 auto 20px auto; }
     #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid var(--gold); transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1); }
     .wheel-pointer {
@@ -133,7 +127,7 @@
 </head>
 <body>
 
-  <!-- STEP 1: LOGIN / ENTRY SCREEN -->
+  <!-- LOGIN SCREEN -->
   <div id="screen-login" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
@@ -160,7 +154,7 @@
     </div>
   </div>
 
-  <!-- STEP 2: LOBBY SCREEN (Wartelobby vor Start) -->
+  <!-- LOBBY SCREEN -->
   <div id="screen-lobby" class="screen-overlay" style="display: none;">
     <div class="card-box" style="max-width: 650px;">
       <h1>🎮 WARTELOBBY</h1>
@@ -303,21 +297,16 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDemoOlympiadeConfigKey2026",
-      authDomain: "gaming-olympiade-2026.firebaseapp.com",
-      projectId: "gaming-olympiade-2026"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
     const STATE = {
       role: 'player',
       roomCode: '',
       myPlayerId: 'p_' + Math.random().toString(36).substring(2, 9),
       myName: '',
       myAvatar: 0,
-      myColor: '#3498db'
+      myColor: '#3498db',
+      score: 0,
+      jokersHigh: 1,
+      jokersBal: 1
     };
 
     const SPONGEBOB_AVATARS = Array.from({length: 25}, (_, i) => i);
@@ -337,18 +326,31 @@
 
     let activeGames = [...GAMES];
     let selectedAvatar = 0;
+    let roomPlayers = [];
 
-    function getFishAvatarSVG(id) {
-      const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
-      const bg = colors[id % colors.length];
-      return `<svg viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="48" fill="${bg}"/>
-        <ellipse cx="50" cy="55" rx="30" ry="22" fill="#fff" opacity="0.3"/>
-        <circle cx="35" cy="40" r="8" fill="#fff"/><circle cx="35" cy="40" r="4" fill="#000"/>
-        <circle cx="65" cy="40" r="8" fill="#fff"/><circle cx="65" cy="40" r="4" fill="#000"/>
-        <path d="M 35 65 Q 50 80 65 65" stroke="#000" stroke-width="4" fill="none"/>
-      </svg>`;
-    }
+    // Lokaler Sync Channel für den Call
+    const channel = new BroadcastChannel('gaming_olympiade_room');
+
+    channel.onmessage = (event) => {
+      const msg = event.data;
+      if (msg.type === 'SYNC_PLAYERS') {
+        roomPlayers = msg.players;
+        renderLobbyPlayers(roomPlayers);
+        renderScoreboard(roomPlayers);
+      } else if (msg.type === 'START_OLYMPIADE') {
+        enterMainApp();
+      } else if (msg.type === 'SPIN_WHEEL') {
+        animateWheelSpin(msg.rot);
+      } else if (msg.type === 'SET_GAME') {
+        const game = GAMES.find(g => g.id === msg.gameId);
+        if (game) {
+          document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+          openJokerModal(game);
+        }
+      } else if (msg.type === 'UPDATE_TIMER') {
+        updateTimerDisplay(msg.sec);
+      }
+    };
 
     window.onload = () => {
       renderAvatarGrid();
@@ -371,7 +373,19 @@
       });
     }
 
-    async function joinRoom() {
+    function getFishAvatarSVG(id) {
+      const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
+      const bg = colors[id % colors.length];
+      return `<svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="${bg}"/>
+        <ellipse cx="50" cy="55" rx="30" ry="22" fill="#fff" opacity="0.3"/>
+        <circle cx="35" cy="40" r="8" fill="#fff"/><circle cx="35" cy="40" r="4" fill="#000"/>
+        <circle cx="65" cy="40" r="8" fill="#fff"/><circle cx="65" cy="40" r="4" fill="#000"/>
+        <path d="M 35 65 Q 50 80 65 65" stroke="#000" stroke-width="4" fill="none"/>
+      </svg>`;
+    }
+
+    function joinRoom() {
       const code = document.getElementById('login-room-input').value.trim().toUpperCase();
       const name = document.getElementById('login-name-input').value.trim();
       const color = document.getElementById('login-color-input').value;
@@ -384,36 +398,30 @@
       STATE.myAvatar = selectedAvatar;
       STATE.myColor = color;
 
-      const roomRef = db.collection('rooms').doc(code);
-      const roomDoc = await roomRef.get();
-
-      if (!roomDoc.exists) {
-        // Erster Spieler erstellt den Raum und wird Host
+      // Prüfe, ob es schon Spieler gibt oder ob du der erste (Host) bist
+      let existing = JSON.parse(localStorage.getItem('olympiade_players_' + code) || '[]');
+      if (existing.length === 0) {
         STATE.role = 'host';
-        await roomRef.set({
-          createdAt: Date.now(),
-          status: 'lobby',
-          spinTarget: 0,
-          currentGame: null,
-          timerSec: 0
-        });
       } else {
-        // Raum existiert bereits -> Gast
         STATE.role = 'player';
       }
 
-      // Spieler im Raum registrieren
-      await roomRef.collection('players').doc(STATE.myPlayerId).set({
+      // Füge dich hinzu
+      roomPlayers = existing.filter(p => p.id !== STATE.myPlayerId);
+      roomPlayers.push({
         id: STATE.myPlayerId,
         name: STATE.myName,
         avatar: STATE.myAvatar,
         color: STATE.myColor,
-        score: 0,
-        jokersHigh: 1,
-        jokersBal: 1
+        score: STATE.score,
+        jokersHigh: STATE.jokersHigh,
+        jokersBal: STATE.jokersBal
       });
 
-      // Wechsel zur Wartelobby
+      localStorage.setItem('olympiade_players_' + code, JSON.stringify(roomPlayers));
+      channel.postMessage({ type: 'SYNC_PLAYERS', players: roomPlayers });
+
+      // UI Wechsel
       document.getElementById('screen-login').style.display = 'none';
       document.getElementById('screen-lobby').style.display = 'flex';
       document.getElementById('lobby-room-name').textContent = code;
@@ -423,36 +431,8 @@
         document.getElementById('guest-wait-container').style.display = 'none';
       }
 
-      startLobbySync();
-    }
-
-    function startLobbySync() {
-      // Höre auf Spieler in der Lobby
-      db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
-        const players = [];
-        snapshot.forEach(doc => players.push(doc.data()));
-        renderLobbyPlayers(players);
-        renderScoreboard(players);
-      });
-
-      // Höre auf Raum-Status (ob Host gestartet hat)
-      db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
-        const data = doc.data();
-        if (!data) return;
-
-        if (data.status === 'active') {
-          enterMainApp();
-        }
-        if (data.spinTarget) animateWheelSpin(data.spinTarget);
-        if (data.currentGame) {
-          const game = GAMES.find(g => g.id === data.currentGame);
-          if (game) {
-            document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
-            openJokerModal(game);
-          }
-        }
-        if (data.timerSec !== undefined) updateTimerDisplay(data.timerSec);
-      });
+      renderLobbyPlayers(roomPlayers);
+      renderScoreboard(roomPlayers);
     }
 
     function renderLobbyPlayers(players) {
@@ -470,8 +450,9 @@
       });
     }
 
-    async function startOlympiade() {
-      await db.collection('rooms').doc(STATE.roomCode).update({ status: 'active' });
+    function startOlympiade() {
+      channel.postMessage({ type: 'START_OLYMPIADE' });
+      enterMainApp();
     }
 
     function enterMainApp() {
@@ -537,7 +518,8 @@
 
     function triggerHostSpin() {
       const rot = 1440 + Math.floor(Math.random() * 360);
-      db.collection('rooms').doc(STATE.roomCode).update({ spinTarget: rot });
+      channel.postMessage({ type: 'SPIN_WHEEL', rot: rot });
+      animateWheelSpin(rot);
     }
 
     function animateWheelSpin(rot) {
@@ -548,7 +530,7 @@
         const index = Math.floor((360 - (rot % 360)) / seg) % activeGames.length;
         const game = activeGames[index];
         if (STATE.role === 'host') {
-          db.collection('rooms').doc(STATE.roomCode).update({ currentGame: game.id, spinTarget: 0 });
+          channel.postMessage({ type: 'SET_GAME', gameId: game.id });
         }
       }, 4000);
     }
@@ -613,16 +595,18 @@
 
     function skipGame() {
       if (confirm('Spiel abbrechen?')) {
-        db.collection('rooms').doc(STATE.roomCode).update({ currentGame: null });
+        document.getElementById('phase-title').textContent = 'Spiel abgebrochen (0 Pkt)';
       }
     }
 
     function toggleTimer() {
-      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: 2400 });
+      channel.postMessage({ type: 'UPDATE_TIMER', sec: 2400 });
+      updateTimerDisplay(2400);
     }
 
     function resetTimer() {
-      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: 0 });
+      channel.postMessage({ type: 'UPDATE_TIMER', sec: 0 });
+      updateTimerDisplay(0);
     }
 
     function updateTimerDisplay(sec) {
@@ -640,31 +624,25 @@
     }
 
     function openScoreEditModal() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').get().then(snap => {
-        const list = document.getElementById('score-edit-list');
-        list.innerHTML = '';
-        snap.forEach(doc => {
-          const p = doc.data();
-          list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span>${p.name}</span><input type="number" id="edit-score-${p.id}" class="form-control" style="width:100px; padding:6px;" value="${p.score}"></div>`;
-        });
-        openModal('score-modal');
+      const list = document.getElementById('score-edit-list');
+      list.innerHTML = '';
+      roomPlayers.forEach(p => {
+        list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span>${p.name}</span><input type="number" id="edit-score-${p.id}" class="form-control" style="width:100px; padding:6px;" value="${p.score}"></div>`;
       });
+      openModal('score-modal');
     }
 
     function saveScores() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').get().then(snap => {
-        snap.forEach(doc => {
-          const p = doc.data();
-          const input = document.getElementById(`edit-score-${p.id}`);
-          if (input) {
-            const val = parseInt(input.value);
-            if (!isNaN(val)) {
-              db.collection('rooms').doc(STATE.roomCode).collection('players').doc(p.id).update({ score: val });
-            }
-          }
-        });
-        closeModal('score-modal');
+      roomPlayers.forEach(p => {
+        const input = document.getElementById(`edit-score-${p.id}`);
+        if (input) {
+          const val = parseInt(input.value);
+          if (!isNaN(val)) p.score = val;
+        }
       });
+      localStorage.setItem('olympiade_players_' + STATE.roomCode, JSON.stringify(roomPlayers));
+      channel.postMessage({ type: 'SYNC_PLAYERS', players: roomPlayers });
+      closeModal('score-modal');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
