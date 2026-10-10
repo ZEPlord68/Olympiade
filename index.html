@@ -119,9 +119,10 @@
     .slot-col-label { font-size: 0.75rem; color: var(--gold-light); font-weight: 800; margin-bottom: 4px; }
     .slot-reel {
       width: 90px; height: 110px; background: #0f141d; border-radius: 12px; border: 3px solid var(--gold);
-      display: flex; align-items: center; justify-content: center; font-size: 2rem; font-family: 'Fredoka One', cursive; color: white;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-family: 'Fredoka One', cursive; color: white;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.8); overflow: hidden; position: relative;
     }
+    .slot-reel.spinning { color: var(--gold-light); filter: blur(0.5px); }
   </style>
 </head>
 <body>
@@ -203,7 +204,7 @@
     </div>
   </div>
 
-  <!-- MAIN HEADER (Mit neuen Optionen oben rechts) -->
+  <!-- MAIN HEADER -->
   <div id="app-header" style="display: none;">
     <header>
       <div class="logo">🎰 OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold);" id="header-room-display"></span></div>
@@ -217,7 +218,6 @@
 
   <!-- MAIN APP BODY -->
   <div id="app-body" class="app-container" style="display: none;">
-    <!-- SIDEBAR LEFT -->
     <div class="sidebar">
       <div class="card">
         <div class="card-title">🏆 Scoreboard & Joker</div>
@@ -233,7 +233,6 @@
       </div>
     </div>
 
-    <!-- MAIN CONTENT RIGHT -->
     <div class="main-content">
       <div class="phase-card">
         <div class="phase-title" id="phase-title">Bereit für den ersten Dreh!</div>
@@ -273,18 +272,18 @@
         <div class="slot-row">
           <div class="slot-col">
             <div class="slot-col-label">Eisen (1-10)</div>
-            <div class="slot-reel" id="mc-reel-1">⛏️</div>
+            <div class="slot-reel" id="mc-reel-1">⛏️1</div>
           </div>
           <div class="slot-col">
             <div class="slot-col-label">Redstone (1-5)</div>
-            <div class="slot-reel" id="mc-reel-2">🔴</div>
+            <div class="slot-reel" id="mc-reel-2">🔴1</div>
           </div>
           <div class="slot-col">
             <div class="slot-col-label">Diamanten (0-3)</div>
-            <div class="slot-reel" id="mc-reel-3">💎</div>
+            <div class="slot-reel" id="mc-reel-3">💎0</div>
           </div>
         </div>
-        <button class="btn btn-green btn-sm" style="width: 100%; margin-top: 5px;" onclick="spinMinecraftSlot()">⛏️ Minecraft Slot Drehen!</button>
+        <button class="btn btn-green btn-sm" id="btn-spin-mc" style="width: 100%; margin-top: 5px;" onclick="spinMinecraftSlot()">⛏️ Minecraft Slot Drehen!</button>
         <div id="mc-slot-result" style="font-family:'Fredoka One'; font-size: 1.1rem; color: var(--gold-light); margin-top: 8px;"></div>
       </div>
 
@@ -302,14 +301,14 @@
         <div class="slot-row" id="dice-container">
           <div class="slot-col">
             <div class="slot-col-label">Würfel 1</div>
-            <div class="slot-reel" id="dice-reel-1">🎲</div>
+            <div class="slot-reel" id="dice-reel-1">🎲1</div>
           </div>
           <div class="slot-col" id="dice-col-2">
             <div class="slot-col-label">Würfel 2</div>
-            <div class="slot-reel" id="dice-reel-2">🎲</div>
+            <div class="slot-reel" id="dice-reel-2">🎲1</div>
           </div>
         </div>
-        <button class="btn btn-gold btn-sm" style="width: 100%; margin-top: 5px;" onclick="spinDiceSlot()">🎲 Würfel im Slot-Stil werfen!</button>
+        <button class="btn btn-gold btn-sm" id="btn-spin-dice" style="width: 100%; margin-top: 5px;" onclick="spinDiceSlot()">🎲 Würfel im Slot-Stil werfen!</button>
         <div id="dice-slot-result" style="font-family:'Fredoka One'; font-size: 1.2rem; color: var(--gold-light); margin-top: 8px;"></div>
       </div>
 
@@ -317,7 +316,7 @@
     </div>
   </div>
 
-  <!-- JOKER AUSWAHL MODAL -->
+  <!-- JOKER MODAL -->
   <div class="modal-overlay" id="joker-modal">
     <div class="modal-box" style="text-align: center;">
       <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 WÄHLE DEINEN JOKER</h2>
@@ -786,37 +785,104 @@
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
     }
 
+    // ANIMIERTE MINECRAFT SLOTMASCHINE (5+ Sekunden Rotation)
     function spinMinecraftSlot() {
-      const iron = Math.floor(Math.random() * 10) + 1;
-      const redstone = Math.floor(Math.random() * 5) + 1;
-      const diamond = Math.floor(Math.random() * 4); // 0 bis 3
+      const btn = document.getElementById('btn-spin-mc');
+      btn.disabled = true;
+      document.getElementById('mc-slot-result').textContent = 'Dreht sich... Viel Glück! 🎰';
 
-      document.getElementById('mc-reel-1').textContent = `⛏️${iron}`;
-      document.getElementById('mc-reel-2').textContent = `🔴${redstone}`;
-      document.getElementById('mc-reel-3').textContent = `💎${diamond}`;
-      document.getElementById('mc-slot-result').textContent = `Ergebnis: ${iron} Eisen | ${redstone} Redstone | ${diamond} Diamanten`;
-      confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+      const finalIron = Math.floor(Math.random() * 10) + 1;
+      const finalRedstone = Math.floor(Math.random() * 5) + 1;
+      const finalDiamond = Math.floor(Math.random() * 4);
+
+      const r1 = document.getElementById('mc-reel-1');
+      const r2 = document.getElementById('mc-reel-2');
+      const r3 = document.getElementById('mc-reel-3');
+
+      r1.classList.add('spinning');
+      r2.classList.add('spinning');
+      r3.classList.add('spinning');
+
+      let startTime = Date.now();
+      let duration = 5000; // 5 Sekunden volle Spannung
+
+      let interval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        
+        // Zufallszahlen während des Ratterns anzeigen
+        r1.textContent = `⛏️${Math.floor(Math.random() * 10) + 1}`;
+        r2.textContent = `🔴${Math.floor(Math.random() * 5) + 1}`;
+        r3.textContent = `💎${Math.floor(Math.random() * 4)}`;
+
+        if (elapsed >= duration) {
+          clearInterval(interval);
+          
+          // Finale Werte einrasten
+          r1.textContent = `⛏️${finalIron}`;
+          r2.textContent = `🔴${finalRedstone}`;
+          r3.textContent = `💎${finalDiamond}`;
+
+          r1.classList.remove('spinning');
+          r2.classList.remove('spinning');
+          r3.classList.remove('spinning');
+
+          document.getElementById('mc-slot-result').textContent = `Ergebnis: ${finalIron} Eisen | ${finalRedstone} Redstone | ${finalDiamond} Diamanten`;
+          btn.disabled = false;
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+        }
+      }, 80); // Wechsel alle 80ms für rasanten Slot-Look
     }
 
+    // ANIMIERTER SLOT-WÜRFEL (5+ Sekunden Rotation)
     function spinDiceSlot() {
+      const btn = document.getElementById('btn-spin-dice');
+      btn.disabled = true;
+      
       const count = parseInt(document.getElementById('dice-count').value);
       const col2 = document.getElementById('dice-col-2');
-      
-      const d1 = Math.floor(Math.random() * 6) + 1;
-      document.getElementById('dice-reel-1').textContent = `🎲${d1}`;
+      if (count === 2) col2.style.display = 'block';
+      else col2.style.display = 'none';
 
-      let sum = d1;
-      if (count === 2) {
-        col2.style.display = 'block';
-        const d2 = Math.floor(Math.random() * 6) + 1;
-        document.getElementById('dice-reel-2').textContent = `🎲${d2}`;
-        sum += d2;
-      } else {
-        col2.style.display = 'none';
-      }
+      document.getElementById('dice-slot-result').textContent = 'Würfelt... 🎲';
 
-      document.getElementById('dice-slot-result').textContent = `Gesamtergebnis: ${sum}`;
-      confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+      const finalD1 = Math.floor(Math.random() * 6) + 1;
+      const finalD2 = count === 2 ? Math.floor(Math.random() * 6) + 1 : 0;
+
+      const r1 = document.getElementById('dice-reel-1');
+      const r2 = document.getElementById('dice-reel-2');
+
+      r1.classList.add('spinning');
+      if (count === 2) r2.classList.add('spinning');
+
+      let startTime = Date.now();
+      let duration = 5000;
+
+      let interval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+
+        r1.textContent = `🎲${Math.floor(Math.random() * 6) + 1}`;
+        if (count === 2) {
+          r2.textContent = `🎲${Math.floor(Math.random() * 6) + 1}`;
+        }
+
+        if (elapsed >= duration) {
+          clearInterval(interval);
+
+          r1.textContent = `🎲${finalD1}`;
+          r1.classList.remove('spinning');
+
+          let sum = finalD1;
+          if (count === 2) {
+            r2.textContent = `🎲${finalD2}`;
+            r2.classList.remove('spinning');
+            sum += finalD2;
+          }
+
+          document.getElementById('dice-slot-result').textContent = `Gesamtergebnis: ${sum}`;
+          btn.disabled = false;
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+        }
+      }, 80);
     }
 
     function renderGamesList() {
