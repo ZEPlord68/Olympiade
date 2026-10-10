@@ -4,7 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaming Olympiade - Casino Edition</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  
+  <!-- Google Fonts & Canvas Confetti -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     :root {
       --gold: #f39c12;
@@ -12,10 +20,9 @@
       --casino-red: #c0392b;
       --casino-darkred: #78281f;
       --casino-green: #27ae60;
-      --bg-dark: #121824;
+      --bg-dark: #0f141d;
       --card-bg: #1e2738;
       --card-border: #2c3e50;
-      --accent: #9b59b6;
       --text: #ecf0f1;
       --text-dim: #bdc3c7;
     }
@@ -23,90 +30,78 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
     body { background: var(--bg-dark); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-    /* Entry Screen Modal */
-    #entry-modal {
+    /* Modals & Fullscreen Overlays */
+    .screen-overlay {
       position: fixed; inset: 0; z-index: 10000;
       background: radial-gradient(circle, #2c3e50 0%, #0f141d 100%);
       display: flex; align-items: center; justify-content: center; padding: 20px;
     }
-    .entry-card {
+    .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 500px; width: 100%; text-align: center;
+      padding: 30px; max-width: 600px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
-    .entry-card h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
-    .role-btn-group { display: flex; gap: 15px; margin-top: 25px; }
-    .role-btn {
-      flex: 1; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 12px; border: none; cursor: pointer;
-      transition: all 0.2s ease;
+    .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 20px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;
+      text-transform: uppercase; font-size: 0.95rem;
     }
-    .role-btn.host { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
-    .role-btn.player { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
-    .role-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; }
+    .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+    .btn-blue { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+    .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+    .btn-dark { background: #2c3e50; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
 
     /* Form Fields */
-    .form-group { margin-top: 20px; text-align: left; }
-    .form-group label { display: block; font-weight: 800; margin-bottom: 8px; color: var(--gold-light); }
+    .form-group { margin-top: 15px; text-align: left; }
+    .form-group label { display: block; font-weight: 800; margin-bottom: 6px; color: var(--gold-light); }
     .form-control {
       width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--card-border);
       background: #0f141d; color: white; font-size: 1.1rem; font-weight: 700; outline: none;
     }
     .form-control:focus { border-color: var(--gold); }
 
-    /* Avatar Grid Selector */
-    .avatar-selector {
+    /* Avatar Grid */
+    .avatar-grid {
       display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-      max-height: 180px; overflow-y: auto; padding: 5px; margin-top: 10px;
+      max-height: 180px; overflow-y: auto; padding: 8px; margin-top: 8px;
       background: #0f141d; border-radius: 10px; border: 1px solid var(--card-border);
     }
-    .avatar-selector-item {
-      width: 100%; aspect-ratio: 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer;
+    .avatar-item {
+      aspect-ratio: 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer;
       background: #1e2738; padding: 4px; transition: all 0.2s ease;
     }
-    .avatar-selector-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.2); transform: scale(1.08); }
-    .avatar-selector-item svg { width: 100%; height: 100%; border-radius: 50%; }
+    .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
+    .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
-    /* Header Nav */
+    /* Header */
     header {
       background: #1a2332; border-bottom: 3px solid var(--gold); padding: 12px 25px;
       display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;
     }
-    .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--gold-light); display: flex; align-items: center; gap: 10px; }
-    .header-actions { display: flex; gap: 10px; align-items: center; }
-    .badge-role { padding: 6px 12px; border-radius: 20px; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; }
-    .badge-role.host { background: var(--casino-red); color: white; }
-    .badge-role.player { background: var(--casino-green); color: white; }
+    .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--gold-light); }
 
-    /* Main Layout */
-    .app-container { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
+    /* Main Dashboard Layout */
+    .app-container { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
     @media (max-width: 1024px) { .app-container { grid-template-columns: 1fr; } }
 
-    /* UI Cards & Buttons */
     .card { background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .card-title { font-family: 'Fredoka One', cursive; color: var(--gold-light); font-size: 1.3rem; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-    .btn {
-      padding: 10px 18px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; text-transform: uppercase; font-size: 0.9rem;
-    }
-    .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; }
-    .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
-    .btn-blue { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
-    .btn-dark { background: #2c3e50; color: white; }
-    .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
-
-    /* Leaderboard Sidebar */
+    /* Player Cards */
     .player-card {
       display: flex; align-items: center; justify-content: space-between;
       background: #141c28; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 10px;
     }
-    .player-info { display: flex; align-items: center; gap: 12px; }
-    .player-avatar { width: 42px; height: 42px; border-radius: 50%; background: #2c3e50; padding: 2px; }
+    .player-avatar { width: 44px; height: 44px; border-radius: 50%; background: #2c3e50; padding: 2px; }
     .player-avatar svg { width: 100%; height: 100%; border-radius: 50%; }
     .player-name { font-weight: 800; font-size: 1.05rem; }
     .player-score { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--gold-light); }
-    .joker-pills { display: flex; gap: 4px; margin-top: 4px; }
     .joker-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; background: #2c3e50; }
     .joker-pill.active { background: var(--gold); color: #000; }
 
@@ -119,17 +114,7 @@
       z-index: 10; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
     }
 
-    /* Game List / Setup Board */
-    .game-list-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; background: #141c28; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--gold);
-    }
-    .game-list-item.disabled { opacity: 0.4; border-left-color: #7f8c8d; }
-    .game-tag { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 800; }
-    .tag-yes { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-    .tag-no { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-
-    /* Phase Box */
+    /* Phase Display Banner */
     .phase-card {
       background: linear-gradient(135deg, #1f2c3f, #141c28); border: 2px solid var(--gold);
       border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px;
@@ -137,7 +122,7 @@
     .phase-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--gold-light); margin-bottom: 10px; }
     .timer-display { font-family: 'Fredoka One', cursive; font-size: 3.5rem; color: white; text-shadow: 0 0 10px var(--gold); margin: 10px 0; }
 
-    /* Modals general */
+    /* Modals */
     .modal-overlay {
       position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.85);
       display: none; align-items: center; justify-content: center; padding: 20px;
@@ -147,115 +132,153 @@
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
       padding: 25px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto;
     }
+
+    /* Slot Machine Visuals */
+    .slot-machine {
+      display: flex; justify-content: center; gap: 15px; background: #000; border: 4px solid var(--gold);
+      border-radius: 15px; padding: 20px; margin: 20px 0;
+    }
+    .slot-reel {
+      width: 80px; height: 100px; background: #1a2332; border-radius: 10px; border: 2px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center; font-size: 3rem; font-family: 'Fredoka One', cursive;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Entry Role Selection & Setup Modal -->
-  <div id="entry-modal">
-    <div class="entry-card">
+  <!-- STEP 1: LOGIN & ROOM SELECTION SCREEN -->
+  <div id="screen-login" class="screen-overlay">
+    <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
-      <p style="color: var(--text-dim); font-weight: 700;">Willkommen in der Casino-Edition!</p>
+      <p style="color: var(--text-dim); font-weight: 700;">Casino Edition - Live Multiplayer</p>
 
-      <div id="role-select-view">
-        <p style="margin-top: 20px; font-weight: 800;">Wähle deine Rolle:</p>
-        <div class="role-btn-group">
-          <button class="role-btn host" onclick="showHostAuth()">👑 Host</button>
-          <button class="role-btn player" onclick="showPlayerSetup()">👤 Teilnehmer</button>
+      <div class="form-group">
+        <label>Raum-Code (z.B. GAMING2026):</label>
+        <input type="text" id="room-code-input" class="form-control" value="GAMING2026" style="text-transform: uppercase;">
+      </div>
+
+      <div class="form-group">
+        <label>Rolle wählen:</label>
+        <div style="display: flex; gap: 10px; margin-top: 5px;">
+          <button class="btn btn-red" style="flex:1;" onclick="setLoginRole('host')">👑 Host</button>
+          <button class="btn btn-green" style="flex:1;" onclick="setLoginRole('player')">👤 Teilnehmer</button>
         </div>
       </div>
 
-      <!-- Host PIN View -->
-      <div id="host-auth-view" style="display: none;">
-        <div class="form-group">
-          <label>Host Name:</label>
-          <input type="text" id="host-name-input" class="form-control" value="Host">
-        </div>
-        <div class="form-group">
-          <label>Host PIN-Code eingeben:</label>
-          <input type="password" id="host-pin-input" class="form-control" placeholder="****" maxlength="4">
-        </div>
-        <div class="form-group">
-          <label>Wähle dein Avatar:</label>
-          <div class="avatar-selector" id="host-avatar-grid"></div>
-        </div>
-        <p id="pin-error" style="color: #e74c3c; font-weight: 800; margin-top: 8px; display: none;">Falscher PIN! (Standard: 1234)</p>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button class="btn btn-dark" style="flex:1;" onclick="resetEntryView()">Zurück</button>
-          <button class="btn btn-gold" style="flex:1;" onclick="submitHostLogin()">Host Starten</button>
-        </div>
+      <div id="pin-field" class="form-group" style="display: none;">
+        <label>Host PIN-Code:</label>
+        <input type="password" id="host-pin-input" class="form-control" placeholder="****" maxlength="4">
       </div>
 
-      <!-- Player Profile View -->
-      <div id="player-setup-view" style="display: none;">
-        <div class="form-group">
-          <label>Dein Name / Nickname:</label>
-          <input type="text" id="player-name-input" class="form-control" placeholder="z.B. Patrick Star">
+      <div class="form-group">
+        <label>Dein Spieler-Name:</label>
+        <input type="text" id="player-name-input" class="form-control" placeholder="Name eingeben...">
+      </div>
+
+      <div class="form-group">
+        <label>Wähle deinen SpongeBob-Fisch Avatar:</label>
+        <div class="avatar-grid" id="login-avatar-grid"></div>
+      </div>
+
+      <button class="btn btn-gold" style="width: 100%; margin-top: 25px; font-size: 1.1rem;" onclick="joinRoom()">Dem Raum Beitreten ➡️</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: LOBBY SCREEN (WAITING ROOM) -->
+  <div id="screen-lobby" class="screen-overlay" style="display: none;">
+    <div class="card-box" style="max-width: 700px;">
+      <h1>🎮 LOBBY - RAUM: <span id="lobby-room-display" style="color: var(--gold);"></span></h1>
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 20px;">
+        Warte auf alle Spieler. Du kannst deinen Namen & Avatar anpassen.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; text-align: left;">
+        
+        <!-- Profile Settings -->
+        <div class="card" style="background: #141c28;">
+          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
+          <div class="form-group">
+            <label>Name ändern:</label>
+            <input type="text" id="lobby-name-input" class="form-control" onchange="updateProfileInLobby()">
+          </div>
+          <div class="form-group">
+            <label>Avatar wählen:</label>
+            <div class="avatar-grid" id="lobby-avatar-grid"></div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Wähle deinen SpongeBob-Fisch Avatar:</label>
-          <div class="avatar-selector" id="avatar-selector-grid"></div>
+
+        <!-- Connected Players List -->
+        <div class="card" style="background: #141c28;">
+          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Anwesende Spieler</h3>
+          <div id="lobby-player-list" style="max-height: 250px; overflow-y: auto;"></div>
         </div>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button class="btn btn-dark" style="flex:1;" onclick="resetEntryView()">Zurück</button>
-          <button class="btn btn-gold" style="flex:1;" onclick="submitPlayerProfile()">Beitreten</button>
-        </div>
+
+      </div>
+
+      <!-- Host Control Button -->
+      <div style="margin-top: 25px;">
+        <button id="btn-start-olympiade" class="btn btn-gold host-only-btn" style="width: 100%; font-size: 1.2rem; display: none;" onclick="startOlympiade()">
+          🚀 OLYMPIADE JETZT STARTEN!
+        </button>
+        <p id="waiting-host-msg" style="color: var(--gold); font-weight: 800; font-size: 1.1rem; display: none;">
+          Warten darauf, dass der Host die Olympiade startet...
+        </p>
       </div>
     </div>
   </div>
 
-  <!-- Header -->
-  <header>
-    <div class="logo">🎰 GAMING OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold); font-family:'Nunito';">(Casino)</span></div>
-    <div class="header-actions">
-      <button class="btn btn-dark btn-sm" onclick="openLegendModal()">📖 Joker-Legende</button>
-      <span id="role-badge" class="badge-role player">Teilnehmer</span>
-      <button class="btn btn-red btn-sm" onclick="switchRole()">Rolle Wechseln</button>
-    </div>
-  </header>
+  <!-- MAIN OLYMPIADE DASHBOARD -->
+  <div id="app-header" style="display: none;">
+    <header>
+      <div class="logo">🎰 GAMING OLYMPIADE <span style="font-size:0.9rem; color:var(--gold);" id="header-room-tag"></span></div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-dark btn-sm" onclick="openModal('legend-modal')">📖 Joker-Legende</button>
+        <span id="role-badge" class="btn btn-sm btn-green">Teilnehmer</span>
+      </div>
+    </header>
+  </div>
 
-  <!-- App Body Layout -->
-  <div class="app-container">
+  <div id="app-body" class="app-container" style="display: none;">
     
-    <!-- Left Sidebar: Players & Scoreboard -->
+    <!-- Left Sidebar: Scoreboard & Host Controls -->
     <div class="sidebar">
       <div class="card">
-        <div class="card-title">
-          <span>🏆 Scoreboard</span>
-        </div>
-        <div id="player-list"></div>
+        <div class="card-title">🏆 Scoreboard</div>
+        <div id="scoreboard-list"></div>
       </div>
 
-      <!-- Host Control Panel Box -->
-      <div class="card host-only" style="margin-top: 20px; border-color: var(--casino-red); display: none;">
-        <div class="card-title" style="color: #e74c3c;">👑 Host Master Steuerung</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button class="btn btn-red" onclick="skipCurrentGame()">⏭️ Spiel Abbrechen / Skippen</button>
+      <!-- Host Admin Controls -->
+      <div id="host-panel" class="card host-only-btn" style="margin-top: 20px; border-color: var(--casino-red); display: none;">
+        <div class="card-title" style="color: #e74c3c;">👑 Host Steuerung</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="btn btn-red" onclick="skipGame()">⏭️ Spiel Abbrechen / Skippen</button>
           <button class="btn btn-blue" onclick="openScoreEditModal()">✏️ Punkte manuell eintragen</button>
+          <button class="btn btn-dark" onclick="openJokerConfigModal()">🃏 Joker-Bestand anpassen</button>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Center Stage: Wheel & Active Game -->
     <div class="main-content">
       
-      <!-- Current Status Phase -->
+      <!-- Current Game Status Banner -->
       <div class="phase-card">
-        <div class="phase-title" id="phase-title">Warten auf Drehung...</div>
+        <div class="phase-title" id="phase-title">Bereit für den ersten Dreh!</div>
         <div class="timer-display" id="timer-display">00:00</div>
         
-        <div id="phase-actions" style="margin-top: 15px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-          <button class="btn btn-gold host-only" id="btn-spin" onclick="spinWheel()" style="display: none;">🎡 Rad Drehen!</button>
-          <button class="btn btn-blue host-only" id="btn-timer-toggle" onclick="toggleTimer()" style="display: none;">⏯️ Timer Start/Pause</button>
+        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;" class="host-only-btn">
+          <button class="btn btn-gold" onclick="triggerHostSpin()">🎡 Rad Drehen!</button>
+          <button class="btn btn-blue" onclick="toggleGameTimer()">⏯️ Timer Start/Pause</button>
+          <button class="btn btn-dark" onclick="resetGameTimer()">⏱️ Reset</button>
         </div>
       </div>
 
-      <!-- Center Wheel & Game Management -->
+      <!-- Wheel and Games List -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         
         <!-- Wheel View -->
         <div class="card" style="text-align: center;">
-          <div class="card-title">🎡 Das Glücksrad</div>
+          <div class="card-title">🎡 Glücksrad</div>
           <div class="wheel-container">
             <div class="wheel-pointer"></div>
             <canvas id="wheel" width="340" height="340"></canvas>
@@ -264,10 +287,7 @@
 
         <!-- Games Setup Board -->
         <div class="card">
-          <div class="card-title">🎮 Aktive Turnierspiele (<span id="active-game-count">10</span>)</div>
-          <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">
-            🟢 Ausgleichs-Joker | 🔴 Kein Ausgleich
-          </p>
+          <div class="card-title">🎮 Aktive Minispiele</div>
           <div id="setup-game-list" style="max-height: 280px; overflow-y: auto;"></div>
         </div>
 
@@ -275,28 +295,49 @@
     </div>
   </div>
 
-  <!-- 20s Joker Choice Modal -->
+  <!-- 20s JOKER CHOICE MODAL -->
   <div class="modal-overlay" id="joker-modal">
     <div class="modal-box" style="text-align: center;">
-      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 JOKER-PHASE (20 sek)</h2>
-      <p id="joker-game-name" style="font-size: 1.3rem; font-weight: 800; margin: 10px 0; color: #2ecc71;"></p>
+      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 JOKER-PHASE (20s)</h2>
+      <p id="joker-game-title" style="font-size: 1.3rem; font-weight: 800; color: #2ecc71; margin: 10px 0;"></p>
 
       <div style="margin: 20px 0; text-align: left;">
         <div class="card" style="margin-bottom: 12px; background: #141c28;">
           <h4 style="color: var(--gold);">🔥 High-Stakes Joker (5 / 4 / 2 Punkte)</h4>
-          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="selectJoker('high_stakes')">Aktivieren</button>
+          <p style="font-size:0.85rem; color:var(--text-dim);">Setzt deine Platzierungspunkte bei diesem Match auf High-Stakes!</p>
+          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('high_stakes')">High-Stakes Aktivieren</button>
         </div>
+
         <div class="card" id="balance-joker-card" style="background: #141c28;">
           <h4 style="color: #2ecc71;">⚖️ Ausgleichs-Joker</h4>
-          <p id="balance-joker-desc" style="font-size: 0.85rem; color: var(--text-dim); margin: 6px 0;"></p>
-          <button class="btn btn-blue btn-sm" id="btn-activate-balance" onclick="selectJoker('balance')">Aktivieren</button>
+          <p id="balance-joker-desc" style="font-size:0.85rem; color:var(--text-dim); margin: 6px 0;"></p>
+          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Ausgleichs-Joker Aktivieren</button>
         </div>
       </div>
-      <button class="btn btn-dark" onclick="closeModal('joker-modal')">Weiter ohne Joker</button>
+
+      <button class="btn btn-dark" onclick="closeModal('joker-modal')">Keinen Joker Nutzen</button>
     </div>
   </div>
 
-  <!-- Legend Modal -->
+  <!-- MINECRAFT SLOT MACHINE MODAL -->
+  <div class="modal-overlay" id="slot-modal">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">⛏️ MINECRAFT ERZ-SLOT</h2>
+      <p style="color: var(--text-dim);">Drehe am Slot für deinen Start-Bonus / Extra-Erz!</p>
+
+      <div class="slot-machine">
+        <div class="slot-reel" id="reel-1">💎</div>
+        <div class="slot-reel" id="reel-2">GOLD</div>
+        <div class="slot-reel" id="reel-3">IRON</div>
+      </div>
+
+      <button class="btn btn-gold" id="btn-spin-slot" style="font-size: 1.2rem;" onclick="spinMinecraftSlot()">🎰 Drehen!</button>
+      <div id="slot-result" style="font-family:'Fredoka One'; font-size: 1.4rem; color: var(--gold-light); margin-top: 15px;"></div>
+      <button class="btn btn-dark" style="margin-top: 15px;" onclick="closeModal('slot-modal')">Schließen</button>
+    </div>
+  </div>
+
+  <!-- LEGEND MODAL -->
   <div class="modal-overlay" id="legend-modal">
     <div class="modal-box">
       <div class="card-title">📖 Joker & Spiel-Regeln</div>
@@ -305,45 +346,55 @@
     </div>
   </div>
 
-  <!-- Host Score Edit Modal -->
-  <div class="modal-overlay" id="score-edit-modal">
+  <!-- SCORE EDIT MODAL -->
+  <div class="modal-overlay" id="score-modal">
     <div class="modal-box">
       <div class="card-title">✏️ Punkte Eintragen</div>
-      <div id="score-edit-list"></div>
-      <button class="btn btn-gold" style="margin-top: 15px; width: 100%;" onclick="closeModal('score-edit-modal')">Speichern</button>
+      <div id="score-edit-inputs"></div>
+      <button class="btn btn-gold" style="margin-top: 15px; width: 100%;" onclick="saveScores()">Punkte Speichern</button>
     </div>
   </div>
 
   <script>
+    // --- FIREBASE IN-MEMORY SETUP ---
+    // Public demo fallback config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDemoOlympiadeConfigKey2026",
+      authDomain: "gaming-olympiade-2026.firebaseapp.com",
+      projectId: "gaming-olympiade-2026",
+      storageBucket: "gaming-olympiade-2026.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:demo1234567890"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- APP STATE ---
     const STATE = {
-      role: 'player',
+      role: 'player', // 'host' or 'player'
+      roomCode: '',
       myPlayerId: null,
+      myAvatar: 0,
+      myName: '',
       pin: '1234',
-      currentGameIndex: null,
-      timerSec: 0,
-      timerRunning: false,
-      timerInterval: null
+      activeGames: []
     };
 
     const SPONGEBOB_AVATARS = Array.from({length: 25}, (_, i) => i);
-    let players = [];
 
-    const GAMES = [
-      { id: 'mc', name: 'Minecraft', hasBalance: true, desc: '40m Timer & 3-Walzen Erz-Slot Bonus.', color: '#2ecc71' },
-      { id: 'golf', name: 'Golf With Your Friends', hasBalance: true, desc: '2-Walzen Slot zieht Extra-Schläge vom Gesamtergebnis ab.', color: '#27ae60' },
-      { id: 'buckshot', name: 'Buckshot Roulette', hasBalance: true, desc: '4-Runden Match. Joker erlaubt Patrone stornieren oder Reroll.', color: '#e74c3c' },
+    const GAMES_MASTER = [
+      { id: 'mc', name: 'Minecraft', hasBalance: true, desc: '40m Timer & 3-Walzen Erz-Slot Machine Bonus.', color: '#2ecc71' },
+      { id: 'golf', name: 'Golf With Your Friends', hasBalance: true, desc: '2-Walzen Slot zieht Extra-Schläge ab.', color: '#27ae60' },
+      { id: 'buckshot', name: 'Buckshot Roulette', hasBalance: true, desc: '4-Runden Match. Joker erlaubt Patrone stornieren / Reroll.', color: '#e74c3c' },
       { id: 'quiz', name: 'Personen Erkennen', hasBalance: true, desc: '20 Bilder Quiz. Joker streicht 2 falsche Antworten.', color: '#f1c40f' },
-      { id: 'speed', name: 'SpeedRunners', hasBalance: true, desc: 'Fast Runner. Joker schaltet 1v1 Showdown frei (+3 Pkt Sieg / +1 Pkt an Gegner).', color: '#e67e22' },
+      { id: 'speed', name: 'SpeedRunners', hasBalance: true, desc: '1v1 Showdown (+3 Pkt bei Sieg / +1 Pkt an Gegner).', color: '#e67e22' },
       { id: 'price', name: 'Guess the Price', hasBalance: false, desc: 'Schätzspiel (Kein Ausgleichs-Joker).', color: '#9b59b6' },
       { id: 'geo', name: 'GeoBingo', hasBalance: false, desc: 'Geoguessr Map Bingo (Kein Ausgleichs-Joker).', color: '#3498db' },
       { id: 'slf', name: 'Stadt Land Fluss', hasBalance: false, desc: 'Klassiker Kategorien (Kein Ausgleichs-Joker).', color: '#1abc9c' },
       { id: 'uno', name: 'Uno', hasBalance: false, desc: 'Kartenspiel (Pure Skill - Kein Ausgleichs-Joker).', color: '#e74c3c' },
       { id: 'skribbl', name: 'Skribbl.io', hasBalance: false, desc: 'Malen & Erraten (Pure Skill - Kein Ausgleichs-Joker).', color: '#f39c12' }
     ];
-
-    let activeGames = [...GAMES];
-    let hostAvatarChoice = 0;
-    let playerAvatarChoice = 0;
 
     function getFishAvatarSVG(id) {
       const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
@@ -358,114 +409,197 @@
     }
 
     window.onload = () => {
-      renderGrid('host-avatar-grid', 'host');
-      renderGrid('avatar-selector-grid', 'player');
-      renderSetupGameList();
-      drawWheel();
+      renderAvatarGrid('login-avatar-grid', (id) => STATE.myAvatar = id);
+      renderAvatarGrid('lobby-avatar-grid', (id) => {
+        STATE.myAvatar = id;
+        updateProfileInLobby();
+      });
       renderLegend();
     };
 
-    function renderGrid(elementId, type) {
-      const grid = document.getElementById(elementId);
+    function renderAvatarGrid(containerId, onSelect) {
+      const grid = document.getElementById(containerId);
       grid.innerHTML = '';
       SPONGEBOB_AVATARS.forEach(id => {
         const div = document.createElement('div');
-        div.className = `avatar-selector-item ${(type === 'host' ? hostAvatarChoice : playerAvatarChoice) === id ? 'selected' : ''}`;
+        div.className = `avatar-item ${STATE.myAvatar === id ? 'selected' : ''}`;
         div.innerHTML = getFishAvatarSVG(id);
         div.onclick = () => {
-          if(type === 'host') hostAvatarChoice = id; else playerAvatarChoice = id;
-          renderGrid(elementId, type);
+          onSelect(id);
+          document.querySelectorAll(`#${containerId} .avatar-item`).forEach(el => el.classList.remove('selected'));
+          div.classList.add('selected');
         };
         grid.appendChild(div);
       });
     }
 
-    function showHostAuth() {
-      document.getElementById('role-select-view').style.display = 'none';
-      document.getElementById('host-auth-view').style.display = 'block';
-    }
-
-    function showPlayerSetup() {
-      document.getElementById('role-select-view').style.display = 'none';
-      document.getElementById('player-setup-view').style.display = 'block';
-    }
-
-    function resetEntryView() {
-      document.getElementById('role-select-view').style.display = 'block';
-      document.getElementById('host-auth-view').style.display = 'none';
-      document.getElementById('player-setup-view').style.display = 'none';
-    }
-
-    function submitHostLogin() {
-      const pin = document.getElementById('host-pin-input').value;
-      if (pin !== STATE.pin) { document.getElementById('pin-error').style.display = 'block'; return; }
-      const name = document.getElementById('host-name-input').value.trim() || 'Host';
-      const newPlayer = { id: Date.now(), name: name, avatar: hostAvatarChoice, score: 0, jokersHigh: 1, jokersBal: 1 };
-      players.push(newPlayer);
-      STATE.myPlayerId = newPlayer.id;
-      setRole('host');
-      closeModal('entry-modal');
-      renderPlayers();
-    }
-
-    function submitPlayerProfile() {
-      const name = document.getElementById('player-name-input').value.trim() || 'Teilnehmer';
-      const newPlayer = { id: Date.now(), name: name, avatar: playerAvatarChoice, score: 0, jokersHigh: 1, jokersBal: 1 };
-      players.push(newPlayer);
-      STATE.myPlayerId = newPlayer.id;
-      setRole('player');
-      closeModal('entry-modal');
-      renderPlayers();
-    }
-
-    function setRole(role) {
+    function setLoginRole(role) {
       STATE.role = role;
-      const badge = document.getElementById('role-badge');
-      badge.textContent = role === 'host' ? '👑 Host' : '👤 Teilnehmer';
-      badge.className = `badge-role ${role}`;
-      document.querySelectorAll('.host-only').forEach(el => {
-        el.style.display = role === 'host' ? 'inline-flex' : 'none';
+      document.getElementById('pin-field').style.display = role === 'host' ? 'block' : 'none';
+    }
+
+    function joinRoom() {
+      const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+      const name = document.getElementById('player-name-input').value.trim() || (STATE.role === 'host' ? 'Host' : 'Spieler');
+      
+      if (STATE.role === 'host') {
+        const pin = document.getElementById('host-pin-input').value;
+        if (pin !== STATE.pin) { alert('Falscher PIN!'); return; }
+      }
+
+      STATE.roomCode = code;
+      STATE.myName = name;
+      STATE.myPlayerId = 'p_' + Date.now();
+
+      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-lobby').style.display = 'flex';
+      document.getElementById('lobby-room-display').textContent = code;
+      document.getElementById('lobby-name-input').value = name;
+
+      if (STATE.role === 'host') {
+        document.getElementById('btn-start-olympiade').style.display = 'block';
+        // Initialize room document
+        db.collection('rooms').doc(code).set({
+          status: 'lobby',
+          activeGames: GAMES_MASTER.map(g => g.id),
+          currentGame: null,
+          timerSec: 0,
+          timerRunning: false
+        }, { merge: true });
+      } else {
+        document.getElementById('waiting-host-msg').style.display = 'block';
+      }
+
+      // Add self to players
+      db.collection('rooms').doc(code).collection('players').doc(STATE.myPlayerId).set({
+        id: STATE.myPlayerId,
+        name: name,
+        avatar: STATE.myAvatar,
+        score: 0,
+        jokersHigh: 1,
+        jokersBal: 1,
+        role: STATE.role
+      });
+
+      listenToRoomUpdates();
+    }
+
+    function updateProfileInLobby() {
+      const newName = document.getElementById('lobby-name-input').value.trim();
+      if(newName) STATE.myName = newName;
+      db.collection('rooms').doc(STATE.roomCode).collection('players').doc(STATE.myPlayerId).update({
+        name: STATE.myName,
+        avatar: STATE.myAvatar
       });
     }
 
-    function switchRole() { document.getElementById('entry-modal').style.display = 'flex'; resetEntryView(); }
+    function listenToRoomUpdates() {
+      // Listen for players
+      db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
+        const playersList = [];
+        snapshot.forEach(doc => playersList.push(doc.data()));
+        renderLobbyPlayers(playersList);
+        renderScoreboard(playersList);
+      });
 
-    function renderPlayers() {
-      const list = document.getElementById('player-list');
-      list.innerHTML = '';
-      if(players.length === 0) { list.innerHTML = '<p style="color:var(--text-dim); font-size:0.9rem;">Noch keine Spieler beigetreten.</p>'; return; }
+      // Listen for room state
+      db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
+        const data = doc.data();
+        if (!data) return;
+
+        STATE.activeGames = GAMES_MASTER.filter(g => data.activeGames.includes(g.id));
+
+        if (data.status === 'active') {
+          document.getElementById('screen-lobby').style.display = 'none';
+          document.getElementById('app-header').style.display = 'block';
+          document.getElementById('app-body').style.display = 'grid';
+          document.getElementById('header-room-tag').textContent = `(${STATE.roomCode})`;
+
+          if (STATE.role === 'host') {
+            document.querySelectorAll('.host-only-btn').forEach(el => el.style.display = 'block');
+          }
+
+          renderGamesList();
+          drawWheel();
+        }
+
+        if (data.spinTarget !== undefined && data.spinTarget !== null) {
+          animateWheelSpin(data.spinTarget);
+        }
+
+        if (data.timerSec !== undefined) {
+          updateTimerDisplay(data.timerSec);
+        }
+
+        if (data.currentGame) {
+          const game = GAMES_MASTER.find(g => g.id === data.currentGame);
+          if (game) {
+            document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+          }
+        }
+      });
+    }
+
+    function renderLobbyPlayers(players) {
+      const container = document.getElementById('lobby-player-list');
+      container.innerHTML = '';
+      players.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="player-avatar">${getFishAvatarSVG(p.avatar)}</div>
+            <div>
+              <strong>${p.name}</strong> ${p.role === 'host' ? '👑 (Host)' : ''}
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderScoreboard(players) {
+      const container = document.getElementById('scoreboard-list');
+      container.innerHTML = '';
       players.sort((a,b) => b.score - a.score).forEach(p => {
         const div = document.createElement('div');
         div.className = 'player-card';
         div.innerHTML = `
-          <div class="player-info">
+          <div style="display:flex; align-items:center; gap:10px;">
             <div class="player-avatar">${getFishAvatarSVG(p.avatar)}</div>
             <div>
-              <div class="player-name">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
-              <div class="joker-pills">
-                <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 High: ${p.jokersHigh}</span>
-                <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal: ${p.jokersBal}</span>
+              <div class="player-name">${p.name}</div>
+              <div style="display:flex; gap:4px; margin-top:2px;">
+                <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 High</span>
+                <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal</span>
               </div>
             </div>
           </div>
           <div class="player-score">${p.score} Pkt</div>
         `;
-        list.appendChild(div);
+        container.appendChild(div);
       });
+    }
+
+    function startOlympiade() {
+      db.collection('rooms').doc(STATE.roomCode).update({ status: 'active' });
     }
 
     function drawWheel() {
       const canvas = document.getElementById('wheel');
       const ctx = canvas.getContext('2d');
-      const numSegments = activeGames.length;
+      const numSegments = STATE.activeGames.length;
       if (numSegments === 0) return;
+
       const angleStep = (2 * Math.PI) / numSegments;
       ctx.clearRect(0,0,340,340);
-      activeGames.forEach((game, i) => {
+
+      STATE.activeGames.forEach((game, i) => {
         const startAngle = i * angleStep;
         const endAngle = startAngle + angleStep;
         ctx.beginPath(); ctx.moveTo(170, 170); ctx.arc(170, 170, 160, startAngle, endAngle);
         ctx.fillStyle = game.color; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+        
         ctx.save(); ctx.translate(170, 170); ctx.rotate(startAngle + angleStep / 2);
         ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = 'bold 13px Nunito';
         ctx.fillText(`${game.hasBalance ? '🟢' : '🔴'} ${game.name}`, 140, 5);
@@ -473,58 +607,31 @@
       });
     }
 
-    function spinWheel() {
-      if (activeGames.length === 0) return;
-      const wheel = document.getElementById('wheel');
+    function triggerHostSpin() {
       const randomRot = 1440 + Math.floor(Math.random() * 360);
-      wheel.style.transform = `rotate(${randomRot}deg)`;
+      db.collection('rooms').doc(STATE.roomCode).update({ spinTarget: randomRot });
+    }
+
+    function animateWheelSpin(rot) {
+      const wheel = document.getElementById('wheel');
+      wheel.style.transform = `rotate(${rot}deg)`;
       setTimeout(() => {
-        const actualDeg = randomRot % 360;
-        const segmentDeg = 360 / activeGames.length;
-        const winnerIndex = Math.floor((360 - (actualDeg % 360)) / segmentDeg) % activeGames.length;
-        STATE.currentGameIndex = winnerIndex;
-        const game = activeGames[winnerIndex];
-        document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+        const segmentDeg = 360 / STATE.activeGames.length;
+        const winnerIndex = Math.floor((360 - (rot % 360)) / segmentDeg) % STATE.activeGames.length;
+        const game = STATE.activeGames[winnerIndex];
+
+        if (STATE.role === 'host') {
+          db.collection('rooms').doc(STATE.roomCode).update({
+            currentGame: game.id,
+            spinTarget: null
+          });
+        }
         openJokerPhaseModal(game);
       }, 4000);
     }
 
-    function renderSetupGameList() {
-      const list = document.getElementById('setup-game-list');
-      list.innerHTML = '';
-      document.getElementById('active-game-count').textContent = activeGames.length;
-      GAMES.forEach(game => {
-        const isActive = activeGames.some(g => g.id === game.id);
-        const div = document.createElement('div');
-        div.className = `game-list-item ${isActive ? '' : 'disabled'}`;
-        div.innerHTML = `
-          <div>
-            <strong>${game.name}</strong>
-            <span class="game-tag ${game.hasBalance ? 'tag-yes' : 'tag-no'}" style="margin-left: 8px;">
-              ${game.hasBalance ? '🟢 Ausgleich' : '🔴 Kein Ausgleich'}
-            </span>
-          </div>
-          <button class="btn btn-red btn-sm host-only" onclick="toggleGameActive('${game.id}')" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'}">
-            ${isActive ? '❌ Entfernen' : '➕ Hinzufügen'}
-          </button>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function toggleGameActive(id) {
-      if (activeGames.some(g => g.id === id)) {
-        activeGames = activeGames.filter(g => g.id !== id);
-      } else {
-        const game = GAMES.find(g => g.id === id);
-        if (game) activeGames.push(game);
-      }
-      renderSetupGameList();
-      drawWheel();
-    }
-
     function openJokerPhaseModal(game) {
-      document.getElementById('joker-game-name').textContent = game.name;
+      document.getElementById('joker-game-title').textContent = game.name;
       const balCard = document.getElementById('balance-joker-card');
       if (game.hasBalance) {
         balCard.style.display = 'block';
@@ -533,91 +640,103 @@
         balCard.style.display = 'none';
       }
       openModal('joker-modal');
-      startTimer(20);
     }
 
-    function selectJoker(type) {
-      const p = players.find(x => x.id === STATE.myPlayerId);
-      if(p) {
-        if(type === 'high_stakes' && p.jokersHigh > 0) p.jokersHigh--;
-        if(type === 'balance' && p.jokersBal > 0) p.jokersBal--;
-        renderPlayers();
-      }
-      alert('Joker erfolgreich eingesetzt!');
+    function useJoker(type) {
+      alert(`Joker (${type}) aktiviert!`);
       closeModal('joker-modal');
-    }
-
-    function skipCurrentGame() {
-      if (confirm('Aktuelles Spiel abbrechen und 0 Punkte vergeben?')) {
-        document.getElementById('phase-title').textContent = 'Spiel abgebrochen (0 Pkt)';
-        resetTimer();
+      if (type === 'balance' && document.getElementById('joker-game-title').textContent === 'Minecraft') {
+        openModal('slot-modal');
       }
     }
 
-    function startTimer(seconds) {
-      resetTimer();
-      STATE.timerSec = seconds;
-      updateTimerDisplay();
-      STATE.timerInterval = setInterval(() => {
-        if (STATE.timerRunning && STATE.timerSec > 0) {
-          STATE.timerSec--;
-          updateTimerDisplay();
-          if (STATE.timerSec === 0) clearInterval(STATE.timerInterval);
-        }
-      }, 1000);
-      STATE.timerRunning = true;
+    function spinMinecraftSlot() {
+      const symbols = ['💎 Diamant', '🥇 Gold', '🥈 Eisen', '🧟 Mobs'];
+      const r1 = symbols[Math.floor(Math.random()*symbols.length)];
+      const r2 = symbols[Math.floor(Math.random()*symbols.length)];
+      const r3 = symbols[Math.floor(Math.random()*symbols.length)];
+
+      document.getElementById('reel-1').textContent = r1.split(' ')[0];
+      document.getElementById('reel-2').textContent = r2.split(' ')[0];
+      document.getElementById('reel-3').textContent = r3.split(' ')[0];
+
+      let msg = 'Gewinn: ';
+      if (r1 === r2 && r2 === r3) msg += '🎉 JACKPOT! (+3 Diamanten Bonus)';
+      else if (r1 === r2 || r2 === r3) msg += '✨ Zweier-Paar! (+1 Erz Bonus)';
+      else msg += 'Kein Dreier-Match, trotzdem Ausgleichs-Vorteil aktiv!';
+
+      document.getElementById('slot-result').textContent = msg;
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
 
-    function toggleTimer() { STATE.timerRunning = !STATE.timerRunning; }
-    function resetTimer() { clearInterval(STATE.timerInterval); STATE.timerRunning = false; STATE.timerSec = 0; updateTimerDisplay(); }
-    function updateTimerDisplay() {
-      const m = String(Math.floor(STATE.timerSec / 60)).padStart(2, '0');
-      const s = String(STATE.timerSec % 60).padStart(2, '0');
+    function renderGamesList() {
+      const list = document.getElementById('setup-game-list');
+      list.innerHTML = '';
+      GAMES_MASTER.forEach(g => {
+        const isActive = STATE.activeGames.some(x => x.id === g.id);
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.style.opacity = isActive ? '1' : '0.4';
+        div.innerHTML = `
+          <div>
+            <strong>${g.name}</strong> ${g.hasBalance ? '🟢' : '🔴'}
+          </div>
+          <button class="btn btn-red btn-sm host-only-btn" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'}" onclick="toggleGameActive('${g.id}')">
+            ${isActive ? '❌ Entfernen' : '➕ Hinzufügen'}
+          </button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function toggleGameActive(id) {
+      let updated = [];
+      if (STATE.activeGames.some(g => g.id === id)) {
+        updated = STATE.activeGames.filter(g => g.id !== id).map(g => g.id);
+      } else {
+        updated = [...STATE.activeGames.map(g => g.id), id];
+      }
+      db.collection('rooms').doc(STATE.roomCode).update({ activeGames: updated });
+    }
+
+    function updateTimerDisplay(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
       document.getElementById('timer-display').textContent = `${m}:${s}`;
+    }
+
+    function toggleGameTimer() {
+      // Host timer toggle
+      let current = 2400; // 40 mins
+      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: current });
+    }
+
+    function resetGameTimer() {
+      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: 0 });
     }
 
     function renderLegend() {
       const container = document.getElementById('legend-content');
       container.innerHTML = '';
-      GAMES.forEach(g => {
-        const div = document.createElement('div');
-        div.style.marginBottom = '12px';
-        div.innerHTML = `
-          <h4 style="color: var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4>
-          <p style="font-size: 0.9rem; color: var(--text-dim);">${g.desc}</p>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function openLegendModal() { openModal('legend-modal'); }
-    
-    function openScoreEditModal() {
-      const list = document.getElementById('score-edit-list');
-      list.innerHTML = '';
-      players.forEach(p => {
-        list.innerHTML += `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span>${p.name}</span>
-            <input type="number" id="score-input-${p.id}" class="form-control" style="width:100px; padding:6px;" value="${p.score}">
+      GAMES_MASTER.forEach(g => {
+        container.innerHTML += `
+          <div style="margin-bottom:12px;">
+            <h4 style="color: var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4>
+            <p style="font-size:0.9rem; color:var(--text-dim);">${g.desc}</p>
           </div>
         `;
       });
-      openModal('score-edit-modal');
     }
 
-    function closeModal(id) {
-      if(id === 'score-edit-modal') {
-        players.forEach(p => {
-          const val = parseInt(document.getElementById(`score-input-${p.id}`).value);
-          if(!isNaN(val)) p.score = val;
-        });
-        renderPlayers();
+    function skipGame() {
+      if(confirm('Spiel abbrechen?')) {
+        db.collection('rooms').doc(STATE.roomCode).update({ currentGame: null });
+        document.getElementById('phase-title').textContent = 'Spiel abgebrochen (0 Pkt)';
       }
-      document.getElementById(id).classList.remove('active');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   </script>
 </body>
 </html>
