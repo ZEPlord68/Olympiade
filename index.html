@@ -123,6 +123,13 @@
       box-shadow: inset 0 0 15px rgba(0,0,0,0.8); overflow: hidden; position: relative;
     }
     .slot-reel.spinning { color: var(--gold-light); filter: blur(0.5px); }
+
+    /* Global Sync Timer Banner */
+    #global-timer-banner {
+      background: linear-gradient(135deg, #c0392b, #e74c3c); border-bottom: 2px solid var(--gold);
+      padding: 10px; text-align: center; font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: #fff;
+      display: none; position: sticky; top: 61px; z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -210,10 +217,15 @@
       <div class="logo">🎰 OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold);" id="header-room-display"></span></div>
       <div style="display: flex; gap: 10px; align-items: center;">
         <button class="btn btn-gold btn-sm" onclick="openModal('slots-modal')">🎰 Slots & Würfel</button>
-        <button class="btn btn-dark btn-sm" onclick="openModal('legend-modal')">📖 Joker-Legende</button>
+        <button class="btn btn-red btn-sm" onclick="openModal('timer-modal')">⏱️ Timer</button>
         <span id="role-badge" class="btn btn-sm btn-green">Gast</span>
       </div>
     </header>
+  </div>
+
+  <!-- GLOBAL SYNC TIMER BANNER (Sichtbar für alle, wenn aktiv) -->
+  <div id="global-timer-banner">
+    ⏳ Minecraft Timer: <span id="timer-display-countdown">--:--</span>
   </div>
 
   <!-- MAIN APP BODY -->
@@ -256,6 +268,32 @@
           <div id="setup-game-list" style="max-height: 280px; overflow-y: auto;"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- TIMER MODAL (Nur Host kann starten) -->
+  <div class="modal-overlay" id="timer-modal">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">⏱️ SPIEL-TIMER</h2>
+      <p style="color: var(--text-dim); margin-bottom: 20px;">Stelle den Timer ein (z.B. für Minecraft):</p>
+      
+      <div id="host-timer-controls" class="host-only" style="display: none; margin-bottom: 20px;">
+        <div class="form-group" style="max-width: 250px; margin: 0 auto 15px auto;">
+          <label>Minuten:</label>
+          <input type="number" id="input-timer-minutes" class="form-control" value="40" min="1" max="180" style="text-align: center;">
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button class="btn btn-green" onclick="startHostTimer()">▶️ Timer Starten</button>
+          <button class="btn btn-red" onclick="stopHostTimer()">⏹️ Stoppen</button>
+        </div>
+      </div>
+
+      <div id="guest-timer-notice" style="margin-bottom: 20px;">
+        <p style="font-weight: 800; color: var(--gold);">Aktuelle Zeit: <span id="modal-timer-view" style="font-size: 1.8rem; font-family:'Fredoka One'; color:#fff;">00:00</span></p>
+        <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 5px;" class="host-only">Nur der Host kann den Timer steuern.</p>
+      </div>
+
+      <button class="btn btn-dark" style="width: 100%;" onclick="closeModal('timer-modal')">Schließen</button>
     </div>
   </div>
 
@@ -344,15 +382,6 @@
     </div>
   </div>
 
-  <!-- LEGEND MODAL -->
-  <div class="modal-overlay" id="legend-modal">
-    <div class="modal-box">
-      <div class="card-title">📖 Joker & Spiel-Regeln</div>
-      <div id="legend-content" style="max-height: 60vh; overflow-y: auto;"></div>
-      <button class="btn btn-dark" style="margin-top: 15px; width: 100%;" onclick="closeModal('legend-modal')">Schließen</button>
-    </div>
-  </div>
-
   <!-- SCORE EDIT MODAL -->
   <div class="modal-overlay" id="score-modal">
     <div class="modal-box">
@@ -396,7 +425,9 @@
     let roundChoices = {};
     let currentWheelRotation = 0;
 
-    window.onload = () => { renderLegend(); };
+    // Timer Variablen
+    let timerInterval = null;
+    let timerTotalSeconds = 0;
 
     function showMainScreen() {
       document.getElementById('screen-create').style.display = 'none';
@@ -572,6 +603,10 @@
         }
       } else if (data.type === 'REVEAL_JOKERS') {
         showRevealModal(data.choices);
+      } else if (data.type === 'START_TIMER') {
+        runClientTimer(data.seconds);
+      } else if (data.type === 'STOP_TIMER') {
+        stopClientTimer();
       }
     }
 
@@ -785,11 +820,82 @@
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
     }
 
-    // ANIMIERTE MINECRAFT SLOTMASCHINE (5+ Sekunden Rotation)
+    // TIMER FUNKTIONEN & SOUNDS
+    function playAlarmBeep(frequency, duration) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function startHostTimer() {
+      const mins = parseInt(document.getElementById('input-timer-minutes').value) || 40;
+      const totalSecs = mins * 60;
+      broadcastData({ type: 'START_TIMER', seconds: totalSecs });
+      runClientTimer(totalSecs);
+      closeModal('timer-modal');
+    }
+
+    function stopHostTimer() {
+      broadcastData({ type: 'STOP_TIMER' });
+      stopClientTimer();
+    }
+
+    function runClientTimer(seconds) {
+      stopClientTimer();
+      timerTotalSeconds = seconds;
+      document.getElementById('global-timer-banner').style.display = 'block';
+
+      timerInterval = setInterval(() => {
+        if (timerTotalSeconds > 0) {
+          timerTotalSeconds--;
+          updateTimerDisplay();
+
+          // Sounds bei 5 Minuten (300 Sek) und 1 Minute (60 Sek)
+          if (timerTotalSeconds === 300) {
+            playAlarmBeep(440, 0.8);
+            setTimeout(() => playAlarmBeep(554, 0.8), 200);
+          }
+          if (timerTotalSeconds === 60) {
+            playAlarmBeep(880, 1.5);
+          }
+        } else {
+          stopClientTimer();
+          playAlarmBeep(300, 2.0);
+        }
+      }, 1000);
+      updateTimerDisplay();
+    }
+
+    function stopClientTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('global-timer-banner').style.display = 'none';
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerTotalSeconds / 60);
+      const s = timerTotalSeconds % 60;
+      const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      const bannerEl = document.getElementById('timer-display-countdown');
+      const modalEl = document.getElementById('modal-timer-view');
+      if (bannerEl) bannerEl.textContent = formatted;
+      if (modalEl) modalEl.textContent = formatted;
+    }
+
+    // ECHTE SLOT ROTATION ANIMATION (5 Sekunden rattern mit Durchlauf)
     function spinMinecraftSlot() {
       const btn = document.getElementById('btn-spin-mc');
       btn.disabled = true;
-      document.getElementById('mc-slot-result').textContent = 'Dreht sich... Viel Glück! 🎰';
+      document.getElementById('mc-slot-result').textContent = 'Rattern läuft... Spannender Dreh! 🎰';
 
       const finalIron = Math.floor(Math.random() * 10) + 1;
       const finalRedstone = Math.floor(Math.random() * 5) + 1;
@@ -804,12 +910,12 @@
       r3.classList.add('spinning');
 
       let startTime = Date.now();
-      let duration = 5000; // 5 Sekunden volle Spannung
+      let duration = 5000; // 5 Sekunden volle Rotations-Action
 
       let interval = setInterval(() => {
         let elapsed = Date.now() - startTime;
         
-        // Zufallszahlen während des Ratterns anzeigen
+        // Ständiges Durchzählen / Ratz-Fatz Durcheinanderwürfeln im Slot-Stil
         r1.textContent = `⛏️${Math.floor(Math.random() * 10) + 1}`;
         r2.textContent = `🔴${Math.floor(Math.random() * 5) + 1}`;
         r3.textContent = `💎${Math.floor(Math.random() * 4)}`;
@@ -817,7 +923,7 @@
         if (elapsed >= duration) {
           clearInterval(interval);
           
-          // Finale Werte einrasten
+          // Einrasten auf das finale Ergebnis
           r1.textContent = `⛏️${finalIron}`;
           r2.textContent = `🔴${finalRedstone}`;
           r3.textContent = `💎${finalDiamond}`;
@@ -830,10 +936,9 @@
           btn.disabled = false;
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         }
-      }, 80); // Wechsel alle 80ms für rasanten Slot-Look
+      }, 70); // Schnellerer Intervall für flüssige Optik
     }
 
-    // ANIMIERTER SLOT-WÜRFEL (5+ Sekunden Rotation)
     function spinDiceSlot() {
       const btn = document.getElementById('btn-spin-dice');
       btn.disabled = true;
@@ -843,7 +948,7 @@
       if (count === 2) col2.style.display = 'block';
       else col2.style.display = 'none';
 
-      document.getElementById('dice-slot-result').textContent = 'Würfelt... 🎲';
+      document.getElementById('dice-slot-result').textContent = 'Würfel rattern... 🎲';
 
       const finalD1 = Math.floor(Math.random() * 6) + 1;
       const finalD2 = count === 2 ? Math.floor(Math.random() * 6) + 1 : 0;
@@ -882,7 +987,7 @@
           btn.disabled = false;
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         }
-      }, 80);
+      }, 70);
     }
 
     function renderGamesList() {
@@ -939,15 +1044,6 @@
       broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
       renderScoreboard(Object.values(playersMap));
       closeModal('score-modal');
-    }
-
-    function renderLegend() {
-      const container = document.getElementById('legend-content');
-      if (!container) return;
-      container.innerHTML = '';
-      GAMES.forEach(g => {
-        container.innerHTML += `<div style="margin-bottom:10px;"><h4 style="color:var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4><p style="font-size:0.9rem; color:var(--text-dim);">${g.desc}</p></div>`;
-      });
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
