@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaming Olympiade - Casino Edition</title>
+  <title>Gaming Olympiade - Wartelobby</title>
   
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -18,7 +18,6 @@
       --gold: #f39c12;
       --gold-light: #f1c40f;
       --casino-red: #c0392b;
-      --casino-darkred: #78281f;
       --casino-green: #27ae60;
       --bg-dark: #0f141d;
       --card-bg: #1e2738;
@@ -30,7 +29,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
     body { background: var(--bg-dark); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-    /* Modals & Fullscreen Overlays */
     .screen-overlay {
       position: fixed; inset: 0; z-index: 10000;
       background: radial-gradient(circle, #2c3e50 0%, #0f141d 100%);
@@ -38,26 +36,22 @@
     }
     .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 550px; width: 100%; text-align: center;
+      padding: 30px; max-width: 520px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
 
-    /* Buttons */
     .btn {
       padding: 12px 20px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;
-      text-transform: uppercase; font-size: 0.95rem;
+      text-transform: uppercase; font-size: 0.95rem; width: 100%;
     }
     .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
     .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; }
-    .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
-    .btn-blue { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
     .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+    .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
     .btn-dark { background: #2c3e50; color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
 
-    /* Form Fields */
     .form-group { margin-top: 15px; text-align: left; }
     .form-group label { display: block; font-weight: 800; margin-bottom: 6px; color: var(--gold-light); }
     .form-control {
@@ -66,7 +60,6 @@
     }
     .form-control:focus { border-color: var(--gold); }
 
-    /* Avatar Grid */
     .avatar-grid {
       display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
       max-height: 150px; overflow-y: auto; padding: 8px; margin-top: 8px;
@@ -79,21 +72,18 @@
     .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
     .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
-    /* Header */
+    /* Header & App Layout */
     header {
       background: #1a2332; border-bottom: 3px solid var(--gold); padding: 12px 25px;
       display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;
     }
     .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--gold-light); }
-
-    /* Main Dashboard Layout */
     .app-container { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
     @media (max-width: 1024px) { .app-container { grid-template-columns: 1fr; } }
 
     .card { background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .card-title { font-family: 'Fredoka One', cursive; color: var(--gold-light); font-size: 1.3rem; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* Player Cards */
     .player-card {
       display: flex; align-items: center; justify-content: space-between;
       background: #141c28; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 10px;
@@ -114,7 +104,6 @@
       z-index: 10; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
     }
 
-    /* Phase Banner */
     .phase-card {
       background: linear-gradient(135deg, #1f2c3f, #141c28); border: 2px solid var(--gold);
       border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px;
@@ -122,7 +111,6 @@
     .phase-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--gold-light); margin-bottom: 10px; }
     .timer-display { font-family: 'Fredoka One', cursive; font-size: 3.2rem; color: white; text-shadow: 0 0 10px var(--gold); margin: 10px 0; }
 
-    /* Modals */
     .modal-overlay {
       position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.85);
       display: none; align-items: center; justify-content: center; padding: 20px;
@@ -133,7 +121,6 @@
       padding: 25px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;
     }
 
-    /* Minecraft Slot Machine */
     .slot-machine {
       display: flex; justify-content: center; gap: 15px; background: #000; border: 4px solid var(--gold);
       border-radius: 15px; padding: 20px; margin: 20px 0;
@@ -146,67 +133,58 @@
 </head>
 <body>
 
-  <!-- STEP 1: INITIAL ENTRY SCREEN -->
+  <!-- STEP 1: LOGIN / ENTRY SCREEN -->
   <div id="screen-login" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
-      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Wähle deine Zugangsart:</p>
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Tritt dem Raum bei:</p>
 
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button class="btn btn-red" style="flex:1;" onclick="switchLoginTab('host')">👑 Host beitreten</button>
-        <button class="btn btn-green" style="flex:1;" onclick="switchLoginTab('player')">👤 Gast beitreten</button>
+      <div class="form-group">
+        <label>Raum-Name:</label>
+        <input type="text" id="login-room-input" class="form-control" placeholder="z.B. DISCORD26" style="text-transform: uppercase;">
+      </div>
+      <div class="form-group">
+        <label>Dein Name:</label>
+        <input type="text" id="login-name-input" class="form-control" placeholder="Dein Name...">
+      </div>
+      <div class="form-group">
+        <label>Deine Namensfarbe:</label>
+        <input type="color" id="login-color-input" class="form-control" value="#3498db" style="height: 45px; cursor: pointer;">
+      </div>
+      <div class="form-group">
+        <label>Wähle deinen Avatar:</label>
+        <div class="avatar-grid" id="login-avatar-grid"></div>
       </div>
 
-      <!-- Host Form (mit leerem PIN und leerem Raumnamen) -->
-      <div id="tab-host" style="text-align: left;">
-        <div class="form-group">
-          <label>Raum-Name eingeben:</label>
-          <input type="text" id="host-room-input" class="form-control" placeholder="z.B. OLYMPIA26" style="text-transform: uppercase;">
-        </div>
-        <div class="form-group">
-          <label>Host PIN-Code (1234):</label>
-          <input type="password" id="host-pin-input" class="form-control" placeholder="****" maxlength="4">
-        </div>
-        <div class="form-group">
-          <label>Dein Name:</label>
-          <input type="text" id="host-name-input" class="form-control" placeholder="Dein Name...">
-        </div>
-        <div class="form-group">
-          <label>Wähle deine Farbe:</label>
-          <input type="color" id="host-color-input" class="form-control" value="#f39c12" style="height: 45px; cursor: pointer;">
-        </div>
-        <div class="form-group">
-          <label>Wähle deinen Avatar:</label>
-          <div class="avatar-grid" id="host-avatar-grid"></div>
-        </div>
-        <button class="btn btn-gold" style="width: 100%; margin-top: 20px;" onclick="loginAsHost()">Raum Erstellen 🚀</button>
-      </div>
-
-      <!-- Player Form (ohne PIN, nur Raumname) -->
-      <div id="tab-player" style="text-align: left; display: none;">
-        <div class="form-group">
-          <label>Raum-Name (vom Host vorgegeben):</label>
-          <input type="text" id="player-room-input" class="form-control" placeholder="z.B. OLYMPIA26" style="text-transform: uppercase;">
-        </div>
-        <div class="form-group">
-          <label>Dein Name:</label>
-          <input type="text" id="player-name-input" class="form-control" placeholder="Dein Name...">
-        </div>
-        <div class="form-group">
-          <label>Wähle deine Farbe:</label>
-          <input type="color" id="player-color-input" class="form-control" value="#3498db" style="height: 45px; cursor: pointer;">
-        </div>
-        <div class="form-group">
-          <label>Wähle deinen Avatar:</label>
-          <div class="avatar-grid" id="player-avatar-grid"></div>
-        </div>
-        <button class="btn btn-green" style="width: 100%; margin-top: 20px;" onclick="loginAsPlayer()">Als Gast Beitreten ➡️</button>
-      </div>
-
+      <button class="btn btn-gold" style="margin-top: 25px; font-size: 1.1rem;" onclick="joinRoom()">In den Raum / Lobby ➡️</button>
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- STEP 2: LOBBY SCREEN (Wartelobby vor Start) -->
+  <div id="screen-lobby" class="screen-overlay" style="display: none;">
+    <div class="card-box" style="max-width: 650px;">
+      <h1>🎮 WARTELOBBY</h1>
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">
+        Raum: <span id="lobby-room-name" style="color: var(--gold);"></span>
+      </p>
+
+      <div class="card" style="background: #141c28; text-align: left; margin-bottom: 20px;">
+        <h3 style="color: var(--gold-light); margin-bottom: 10px;">Anwesende Spieler:</h3>
+        <div id="lobby-player-list" style="max-height: 220px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- Nur Host sieht den Start-Button -->
+      <div id="host-start-container" style="display: none;">
+        <button class="btn btn-green" style="font-size: 1.2rem;" onclick="startOlympiade()">🚀 OLYMPIADE JETZT STARTEN!</button>
+        <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 8px;">Du bist der Host (erster Spieler im Raum).</p>
+      </div>
+      <div id="guest-wait-container">
+        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host das Spiel startet...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP HEADER -->
   <div id="app-header" style="display: none;">
     <header>
       <div class="logo">🎰 OLYMPIADE <span style="font-size: 0.9rem; color: var(--gold);" id="header-room-display"></span></div>
@@ -358,8 +336,7 @@
     ];
 
     let activeGames = [...GAMES];
-    let hostAvatarChoice = 0;
-    let playerAvatarChoice = 0;
+    let selectedAvatar = 0;
 
     function getFishAvatarSVG(id) {
       const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
@@ -374,71 +351,131 @@
     }
 
     window.onload = () => {
-      renderAvatarGrid('host-avatar-grid', (id) => hostAvatarChoice = id);
-      renderAvatarGrid('player-avatar-grid', (id) => playerAvatarChoice = id);
+      renderAvatarGrid();
       renderLegend();
     };
 
-    function renderAvatarGrid(containerId, callback) {
-      const grid = document.getElementById(containerId);
+    function renderAvatarGrid() {
+      const grid = document.getElementById('login-avatar-grid');
       grid.innerHTML = '';
       SPONGEBOB_AVATARS.forEach(id => {
         const div = document.createElement('div');
         div.className = `avatar-item ${id === 0 ? 'selected' : ''}`;
         div.innerHTML = getFishAvatarSVG(id);
         div.onclick = () => {
-          callback(id);
-          document.querySelectorAll(`#${containerId} .avatar-item`).forEach(el => el.classList.remove('selected'));
+          selectedAvatar = id;
+          document.querySelectorAll('#login-avatar-grid .avatar-item').forEach(el => el.classList.remove('selected'));
           div.classList.add('selected');
         };
         grid.appendChild(div);
       });
     }
 
-    function switchLoginTab(tab) {
-      document.getElementById('tab-host').style.display = tab === 'host' ? 'block' : 'none';
-      document.getElementById('tab-player').style.display = tab === 'player' ? 'block' : 'none';
-    }
-
-    function loginAsHost() {
-      const code = document.getElementById('host-room-input').value.trim().toUpperCase();
-      const pin = document.getElementById('host-pin-input').value;
-      const name = document.getElementById('host-name-input').value.trim();
-      const color = document.getElementById('host-color-input').value;
-
-      if (pin !== '1234') { alert('Falscher PIN! (Standard: 1234)'); return; }
-      if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
-      if (!name) { alert('Bitte deinen Namen eingeben!'); return; }
-
-      STATE.role = 'host';
-      STATE.roomCode = code;
-      STATE.myName = name;
-      STATE.myAvatar = hostAvatarChoice;
-      STATE.myColor = color;
-
-      db.collection('rooms').doc(code).set({ createdAt: Date.now(), spinTarget: 0, currentGame: null, timerSec: 0 }, { merge: true });
-      enterAppRoom();
-    }
-
-    function loginAsPlayer() {
-      const code = document.getElementById('player-room-input').value.trim().toUpperCase();
-      const name = document.getElementById('player-name-input').value.trim();
-      const color = document.getElementById('player-color-input').value;
+    async function joinRoom() {
+      const code = document.getElementById('login-room-input').value.trim().toUpperCase();
+      const name = document.getElementById('login-name-input').value.trim();
+      const color = document.getElementById('login-color-input').value;
 
       if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
       if (!name) { alert('Bitte deinen Namen eingeben!'); return; }
 
-      STATE.role = 'player';
       STATE.roomCode = code;
       STATE.myName = name;
-      STATE.myAvatar = playerAvatarChoice;
+      STATE.myAvatar = selectedAvatar;
       STATE.myColor = color;
 
-      enterAppRoom();
-    }
+      const roomRef = db.collection('rooms').doc(code);
+      const roomDoc = await roomRef.get();
 
-    function enterAppRoom() {
+      if (!roomDoc.exists) {
+        // Erster Spieler erstellt den Raum und wird Host
+        STATE.role = 'host';
+        await roomRef.set({
+          createdAt: Date.now(),
+          status: 'lobby',
+          spinTarget: 0,
+          currentGame: null,
+          timerSec: 0
+        });
+      } else {
+        // Raum existiert bereits -> Gast
+        STATE.role = 'player';
+      }
+
+      // Spieler im Raum registrieren
+      await roomRef.collection('players').doc(STATE.myPlayerId).set({
+        id: STATE.myPlayerId,
+        name: STATE.myName,
+        avatar: STATE.myAvatar,
+        color: STATE.myColor,
+        score: 0,
+        jokersHigh: 1,
+        jokersBal: 1
+      });
+
+      // Wechsel zur Wartelobby
       document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-lobby').style.display = 'flex';
+      document.getElementById('lobby-room-name').textContent = code;
+
+      if (STATE.role === 'host') {
+        document.getElementById('host-start-container').style.display = 'block';
+        document.getElementById('guest-wait-container').style.display = 'none';
+      }
+
+      startLobbySync();
+    }
+
+    function startLobbySync() {
+      // Höre auf Spieler in der Lobby
+      db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
+        const players = [];
+        snapshot.forEach(doc => players.push(doc.data()));
+        renderLobbyPlayers(players);
+        renderScoreboard(players);
+      });
+
+      // Höre auf Raum-Status (ob Host gestartet hat)
+      db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
+        const data = doc.data();
+        if (!data) return;
+
+        if (data.status === 'active') {
+          enterMainApp();
+        }
+        if (data.spinTarget) animateWheelSpin(data.spinTarget);
+        if (data.currentGame) {
+          const game = GAMES.find(g => g.id === data.currentGame);
+          if (game) {
+            document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+            openJokerModal(game);
+          }
+        }
+        if (data.timerSec !== undefined) updateTimerDisplay(data.timerSec);
+      });
+    }
+
+    function renderLobbyPlayers(players) {
+      const list = document.getElementById('lobby-player-list');
+      list.innerHTML = '';
+      players.forEach(p => {
+        list.innerHTML += `
+          <div class="player-card" style="border-left: 5px solid ${p.color || '#3498db'};">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="player-avatar">${getFishAvatarSVG(p.avatar)}</div>
+              <div class="player-name" style="color: ${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function startOlympiade() {
+      await db.collection('rooms').doc(STATE.roomCode).update({ status: 'active' });
+    }
+
+    function enterMainApp() {
+      document.getElementById('screen-lobby').style.display = 'none';
       document.getElementById('app-header').style.display = 'block';
       document.getElementById('app-body').style.display = 'grid';
       document.getElementById('header-room-display').textContent = `(Raum: ${STATE.roomCode})`;
@@ -451,41 +488,8 @@
         document.querySelectorAll('.host-only').forEach(el => el.style.display = 'block');
       }
 
-      db.collection('rooms').doc(STATE.roomCode).collection('players').doc(STATE.myPlayerId).set({
-        id: STATE.myPlayerId,
-        name: STATE.myName,
-        avatar: STATE.myAvatar,
-        color: STATE.myColor,
-        score: 0,
-        jokersHigh: 1,
-        jokersBal: 1
-      });
-
-      startRealtimeSync();
       renderGamesList();
       drawWheel();
-    }
-
-    function startRealtimeSync() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
-        const players = [];
-        snapshot.forEach(doc => players.push(doc.data()));
-        renderScoreboard(players);
-      });
-
-      db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
-        const data = doc.data();
-        if (!data) return;
-        if (data.spinTarget) animateWheelSpin(data.spinTarget);
-        if (data.currentGame) {
-          const game = GAMES.find(g => g.id === data.currentGame);
-          if (game) {
-            document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
-            openJokerModal(game);
-          }
-        }
-        if (data.timerSec !== undefined) updateTimerDisplay(data.timerSec);
-      });
     }
 
     function renderScoreboard(players) {
@@ -588,7 +592,7 @@
         list.innerHTML += `
           <div class="player-card" style="opacity: ${isActive ? '1' : '0.4'};">
             <div><strong>${g.name}</strong> ${g.hasBalance ? '🟢' : '🔴'}</div>
-            <button class="btn btn-red btn-sm host-only" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'}" onclick="toggleGame('${g.id}')">
+            <button class="btn btn-red btn-sm host-only" style="display: ${STATE.role === 'host' ? 'inline-flex' : 'none'}; width:auto;" onclick="toggleGame('${g.id}')">
               ${isActive ? '❌ Entfernen' : '➕'}
             </button>
           </div>
