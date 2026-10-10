@@ -36,7 +36,7 @@
     }
     .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 520px; width: 100%; text-align: center;
+      padding: 30px; max-width: 580px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
@@ -67,9 +67,10 @@
     }
     .avatar-item {
       aspect-ratio: 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer;
-      background: #1e2738; padding: 4px; transition: all 0.2s ease;
+      background: #1e2738; padding: 4px; transition: all 0.2s ease; position: relative;
     }
     .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
+    .avatar-item.taken { opacity: 0.25; cursor: not-allowed; filter: grayscale(1); }
     .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
     header {
@@ -131,53 +132,75 @@
 </head>
 <body>
 
-  <!-- LOGIN SCREEN (Alles leer) -->
-  <div id="screen-login" class="screen-overlay">
+  <!-- STEP 1: ONLY ROOM NAME -->
+  <div id="screen-room" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
-      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Raum betreten:</p>
-
+      <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">Gib den Raumnamen ein:</p>
       <div class="form-group">
-        <label>Raum-Name (Code):</label>
-        <input type="text" id="login-room-input" class="form-control" placeholder="z.B. DISCORD26" style="text-transform: uppercase;">
+        <label>Raum-Name:</label>
+        <input type="text" id="input-room-name" class="form-control" placeholder="z.B. DISCORD26" style="text-transform: uppercase;">
       </div>
-      <div class="form-group">
-        <label>Dein Name:</label>
-        <input type="text" id="login-name-input" class="form-control" placeholder="Dein Name...">
-      </div>
-      <div class="form-group">
-        <label>Deine Namensfarbe:</label>
-        <input type="color" id="login-color-input" class="form-control" value="#3498db" style="height: 45px; cursor: pointer;">
-      </div>
-      <div class="form-group">
-        <label>Wähle deinen Avatar:</label>
-        <div class="avatar-grid" id="login-avatar-grid"></div>
-      </div>
-
-      <button class="btn btn-gold" style="margin-top: 25px; font-size: 1.1rem;" onclick="joinRoom()">In den Raum / Lobby ➡️</button>
+      <button class="btn btn-gold" style="margin-top: 25px;" onclick="enterRoomSetup()">Raum Betreten ➡️</button>
     </div>
   </div>
 
-  <!-- WARTELOBBY SCREEN -->
-  <div id="screen-lobby" class="screen-overlay" style="display: none;">
+  <!-- STEP 2: PROFILE SETUP & LOBBY -->
+  <div id="screen-setup" class="screen-overlay" style="display: none;">
     <div class="card-box" style="max-width: 650px;">
       <h1>🎮 WARTELOBBY</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">
-        Raum: <span id="lobby-room-name" style="color: var(--gold);"></span>
+        Raum: <span id="setup-room-display" style="color: var(--gold);"></span>
       </p>
 
-      <div class="card" style="background: #141c28; text-align: left; margin-bottom: 20px;">
-        <h3 style="color: var(--gold-light); margin-bottom: 10px;">Anwesende Spieler:</h3>
-        <div id="lobby-player-list" style="max-height: 220px; overflow-y: auto;"></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
+        <!-- Profile Config -->
+        <div class="card" style="background: #141c28; margin-bottom:0;">
+          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
+          <div class="form-group" style="margin-top:5px;">
+            <label>Name:</label>
+            <input type="text" id="input-player-name" class="form-control" placeholder="Dein Name..." oninput="updateMyProfile()">
+          </div>
+          <div class="form-group">
+            <label>Farbe:</label>
+            <input type="color" id="input-player-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="updateMyProfile()">
+          </div>
+          <div class="form-group">
+            <label>Avatar wählen:</label>
+            <div class="avatar-grid" id="setup-avatar-grid"></div>
+          </div>
+        </div>
+
+        <!-- Players List & Host Settings -->
+        <div class="card" style="background: #141c28; margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler im Raum</h3>
+            <div id="setup-player-list" style="max-height: 180px; overflow-y: auto;"></div>
+          </div>
+
+          <!-- Host Joker Config -->
+          <div id="host-joker-config" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
+            <label style="color: var(--gold); font-size: 0.9rem; font-weight: 800;">Joker-Startanzahl:</label>
+            <div style="display: flex; gap: 10px; margin-top: 5px;">
+              <div style="flex:1;">
+                <span style="font-size:0.75rem; color:var(--text-dim);">🔥 High:</span>
+                <input type="number" id="cfg-joker-high" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomConfig()">
+              </div>
+              <div style="flex:1;">
+                <span style="font-size:0.75rem; color:var(--text-dim);">⚖️ Bal:</span>
+                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomConfig()">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Nur Host sieht den Start-Button -->
+      <!-- Start Button for Host -->
       <div id="host-start-container" style="display: none;">
         <button class="btn btn-green" style="font-size: 1.2rem;" onclick="startOlympiade()">🚀 OLYMPIADE JETZT STARTEN!</button>
-        <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 8px;">Du bist der Host (erster im Raum).</p>
       </div>
       <div id="guest-wait-container">
-        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host das Spiel startet...</p>
+        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host startet...</p>
       </div>
     </div>
   </div>
@@ -253,13 +276,13 @@
       <p id="joker-game-title" style="font-size: 1.3rem; font-weight: 800; color: #2ecc71; margin: 10px 0;"></p>
       <div style="margin: 20px 0; text-align: left;">
         <div class="card" style="margin-bottom: 12px; background: #141c28;">
-          <h4 style="color: var(--gold);">🔥 High-Stakes Joker (5 / 4 / 2 Punkte)</h4>
-          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('high_stakes')">High-Stakes Aktivieren</button>
+          <h4 style="color: var(--gold);">🔥 High-Stakes Joker</h4>
+          <button class="btn btn-gold btn-sm" style="margin-top: 8px;" onclick="useJoker('high_stakes')">Aktivieren</button>
         </div>
         <div class="card" id="balance-card" style="background: #141c28;">
           <h4 style="color: #2ecc71;">⚖️ Ausgleichs-Joker</h4>
           <p id="balance-desc" style="font-size: 0.85rem; color: var(--text-dim); margin: 6px 0;"></p>
-          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Ausgleichs-Joker Aktivieren</button>
+          <button class="btn btn-blue btn-sm" onclick="useJoker('balance')">Aktivieren</button>
         </div>
       </div>
       <button class="btn btn-dark" onclick="closeModal('joker-modal')">Weiter ohne Joker</button>
@@ -301,26 +324,24 @@
   </div>
 
   <script>
-    // Firebase Setup mit Fehlerschutz
     const firebaseConfig = {
       apiKey: "AIzaSyDemoOlympiadeConfigKey2026",
       authDomain: "gaming-olympiade-2026.firebaseapp.com",
       projectId: "gaming-olympiade-2026"
     };
-    
-    try {
-      firebase.initializeApp(firebaseConfig);
-    } catch(e) {}
-    
+    try { firebase.initializeApp(firebaseConfig); } catch(e) {}
     const db = firebase.firestore();
 
     const STATE = {
       role: 'player',
       roomCode: '',
       myPlayerId: 'p_' + Math.random().toString(36).substring(2, 9),
-      myName: '',
+      myName: 'Spieler ' + Math.floor(Math.random()*100),
       myAvatar: 0,
-      myColor: '#3498db'
+      myColor: '#3498db',
+      score: 0,
+      jokersHigh: 1,
+      jokersBal: 1
     };
 
     const SPONGEBOB_AVATARS = Array.from({length: 25}, (_, i) => i);
@@ -339,7 +360,7 @@
     ];
 
     let activeGames = [...GAMES];
-    let selectedAvatar = 0;
+    let allRoomPlayers = [];
 
     function getFishAvatarSVG(id) {
       const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
@@ -354,103 +375,86 @@
     }
 
     window.onload = () => {
-      renderAvatarGrid();
       renderLegend();
     };
 
-    function renderAvatarGrid() {
-      const grid = document.getElementById('login-avatar-grid');
-      grid.innerHTML = '';
-      SPONGEBOB_AVATARS.forEach(id => {
-        const div = document.createElement('div');
-        div.className = `avatar-item ${id === 0 ? 'selected' : ''}`;
-        div.innerHTML = getFishAvatarSVG(id);
-        div.onclick = () => {
-          selectedAvatar = id;
-          document.querySelectorAll('#login-avatar-grid .avatar-item').forEach(el => el.classList.remove('selected'));
-          div.classList.add('selected');
-        };
-        grid.appendChild(div);
-      });
-    }
-
-    async function joinRoom() {
-      const code = document.getElementById('login-room-input').value.trim().toUpperCase();
-      const name = document.getElementById('login-name-input').value.trim();
-      const color = document.getElementById('login-color-input').value;
-
+    async function enterRoomSetup() {
+      const code = document.getElementById('input-room-name').value.trim().toUpperCase();
       if (!code) { alert('Bitte Raum-Name eingeben!'); return; }
-      if (!name) { alert('Bitte deinen Namen eingeben!'); return; }
 
       STATE.roomCode = code;
-      STATE.myName = name;
-      STATE.myAvatar = selectedAvatar;
-      STATE.myColor = color;
-
       const roomRef = db.collection('rooms').doc(code);
 
       try {
         const roomDoc = await roomRef.get();
         if (!roomDoc.exists) {
-          // Erster Spieler erstellt den Raum -> Host
           STATE.role = 'host';
           await roomRef.set({
             createdAt: Date.now(),
-            status: 'lobby',
+            status: 'setup',
+            jokerHighCfg: 1,
+            jokerBalCfg: 1,
             spinTarget: 0,
             currentGame: null,
             timerSec: 0
           });
         } else {
-          // Raum existiert -> Gast
           STATE.role = 'player';
+          const data = roomDoc.data();
+          STATE.jokersHigh = data.jokerHighCfg || 1;
+          STATE.jokersBal = data.jokerBalCfg || 1;
         }
       } catch (err) {
-        // Fallback falls Offline/Fehler: Erster wird Host
         STATE.role = 'host';
-        await roomRef.set({ status: 'lobby', createdAt: Date.now() }).catch(() => {});
+        await roomRef.set({ status: 'setup', createdAt: Date.now() }).catch(()=>{});
       }
 
-      // Spieler im Raum registrieren
-      await roomRef.collection('players').doc(STATE.myPlayerId).set({
+      document.getElementById('input-player-name').value = STATE.myName;
+      document.getElementById('input-player-color').value = STATE.myColor;
+
+      document.getElementById('screen-room').style.display = 'none';
+      document.getElementById('screen-setup').style.display = 'flex';
+      document.getElementById('setup-room-display').textContent = code;
+
+      if (STATE.role === 'host') {
+        document.getElementById('host-start-container').style.display = 'block';
+        document.getElementById('guest-wait-container').style.display = 'none';
+        document.getElementById('host-joker-config').style.display = 'block';
+      }
+
+      // Save initial profile
+      await db.collection('rooms').doc(code).collection('players').doc(STATE.myPlayerId).set({
         id: STATE.myPlayerId,
         name: STATE.myName,
         avatar: STATE.myAvatar,
         color: STATE.myColor,
         score: 0,
-        jokersHigh: 1,
-        jokersBal: 1
+        jokersHigh: STATE.jokersHigh,
+        jokersBal: STATE.jokersBal
       });
-
-      // Wechsel zur Wartelobby
-      document.getElementById('screen-login').style.display = 'none';
-      document.getElementById('screen-lobby').style.display = 'flex';
-      document.getElementById('lobby-room-name').textContent = code;
-
-      if (STATE.role === 'host') {
-        document.getElementById('host-start-container').style.display = 'block';
-        document.getElementById('guest-wait-container').style.display = 'none';
-      }
 
       startRealtimeSync();
     }
 
     function startRealtimeSync() {
-      // Live-Sync Spieler in Lobby & Scoreboard
       db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
-        const players = [];
-        snapshot.forEach(doc => players.push(doc.data()));
-        renderLobbyPlayers(players);
-        renderScoreboard(players);
+        allRoomPlayers = [];
+        snapshot.forEach(doc => allRoomPlayers.push(doc.data()));
+        renderSetupAvatarGrid();
+        renderSetupPlayersList(allRoomPlayers);
+        renderScoreboard(allRoomPlayers);
       });
 
-      // Live-Sync Raumstatus (Start-Befehl)
       db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
         const data = doc.data();
         if (!data) return;
 
         if (data.status === 'active') {
           enterMainApp();
+        }
+        if (data.jokerHighCfg !== undefined && STATE.role !== 'host') {
+          STATE.jokersHigh = data.jokerHighCfg;
+          STATE.jokersBal = data.jokerBalCfg;
         }
         if (data.spinTarget) animateWheelSpin(data.spinTarget);
         if (data.currentGame) {
@@ -464,18 +468,67 @@
       });
     }
 
-    function renderLobbyPlayers(players) {
-      const list = document.getElementById('lobby-player-list');
+    function renderSetupAvatarGrid() {
+      const grid = document.getElementById('setup-avatar-grid');
+      grid.innerHTML = '';
+      
+      // Finde alle bereits vergebenen Avatare von ANDEREN Spielern
+      const takenAvatars = allRoomPlayers.filter(p => p.id !== STATE.myPlayerId).map(p => p.avatar);
+
+      SPONGEBOB_AVATARS.forEach(id => {
+        const isTaken = takenAvatars.includes(id);
+        const div = document.createElement('div');
+        div.className = `avatar-item ${STATE.myAvatar === id ? 'selected' : ''} ${isTaken ? 'taken' : ''}`;
+        div.innerHTML = getFishAvatarSVG(id);
+        
+        if (!isTaken) {
+          div.onclick = () => {
+            STATE.myAvatar = id;
+            updateMyProfile();
+          };
+        }
+        grid.appendChild(div);
+      });
+    }
+
+    function renderSetupPlayersList(players) {
+      const list = document.getElementById('setup-player-list');
       list.innerHTML = '';
       players.forEach(p => {
         list.innerHTML += `
-          <div class="player-card" style="border-left: 5px solid ${p.color || '#3498db'};">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div class="player-avatar">${getFishAvatarSVG(p.avatar)}</div>
-              <div class="player-name" style="color: ${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
+          <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:6px; padding:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="player-avatar" style="width:32px; height:32px;">${getFishAvatarSVG(p.avatar)}</div>
+              <div class="player-name" style="font-size:0.95rem; color:${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
             </div>
           </div>
         `;
+      });
+    }
+
+    async function updateMyProfile() {
+      const name = document.getElementById('input-player-name').value.trim() || 'Spieler';
+      const color = document.getElementById('input-player-color').value;
+
+      STATE.myName = name;
+      STATE.myColor = color;
+
+      await db.collection('rooms').doc(STATE.roomCode).collection('players').doc(STATE.myPlayerId).update({
+        name: STATE.myName,
+        avatar: STATE.myAvatar,
+        color: STATE.myColor,
+        jokersHigh: STATE.jokersHigh,
+        jokersBal: STATE.jokersBal
+      });
+    }
+
+    async function updateRoomConfig() {
+      if (STATE.role !== 'host') return;
+      const high = parseInt(document.getElementById('cfg-joker-high').value) || 1;
+      const bal = parseInt(document.getElementById('cfg-joker-bal').value) || 1;
+      await db.collection('rooms').doc(STATE.roomCode).update({
+        jokerHighCfg: high,
+        jokerBalCfg: bal
       });
     }
 
@@ -484,7 +537,7 @@
     }
 
     function enterMainApp() {
-      document.getElementById('screen-lobby').style.display = 'none';
+      document.getElementById('screen-setup').style.display = 'none';
       document.getElementById('app-header').style.display = 'block';
       document.getElementById('app-body').style.display = 'grid';
       document.getElementById('header-room-display').textContent = `(Raum: ${STATE.roomCode})`;
@@ -503,6 +556,7 @@
 
     function renderScoreboard(players) {
       const list = document.getElementById('scoreboard-list');
+      if (!list) return;
       list.innerHTML = '';
       players.sort((a,b) => b.score - a.score).forEach(p => {
         list.innerHTML += `
@@ -525,6 +579,7 @@
 
     function drawWheel() {
       const canvas = document.getElementById('wheel');
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const num = activeGames.length;
       if (num === 0) return;
@@ -551,6 +606,7 @@
 
     function animateWheelSpin(rot) {
       const wheel = document.getElementById('wheel');
+      if (!wheel) return;
       wheel.style.transform = `rotate(${rot}deg)`;
       setTimeout(() => {
         const seg = 360 / activeGames.length;
@@ -595,6 +651,7 @@
 
     function renderGamesList() {
       const list = document.getElementById('setup-game-list');
+      if (!list) return;
       list.innerHTML = '';
       GAMES.forEach(g => {
         const isActive = activeGames.some(x => x.id === g.id);
@@ -635,13 +692,16 @@
     }
 
     function updateTimerDisplay(sec) {
+      const display = document.getElementById('timer-display');
+      if (!display) return;
       const m = String(Math.floor(sec / 60)).padStart(2, '0');
       const s = String(sec % 60).padStart(2, '0');
-      document.getElementById('timer-display').textContent = `${m}:${s}`;
+      display.textContent = `${m}:${s}`;
     }
 
     function renderLegend() {
       const container = document.getElementById('legend-content');
+      if (!container) return;
       container.innerHTML = '';
       GAMES.forEach(g => {
         container.innerHTML += `<div style="margin-bottom:10px;"><h4 style="color:var(--gold);">${g.name} ${g.hasBalance ? '🟢' : '🔴'}</h4><p style="font-size:0.9rem; color:var(--text-dim);">${g.desc}</p></div>`;
