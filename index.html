@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaming Olympiade - Wartelobby</title>
+  <title>Gaming Olympiade</title>
   
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <!-- PeerJS für echte Live-Verbindung zwischen verschiedenen Wohnungen -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   
   <!-- Google Fonts & Canvas Confetti -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
@@ -36,7 +35,7 @@
     }
     .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 580px; width: 100%; text-align: center;
+      padding: 30px; max-width: 600px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
@@ -51,6 +50,7 @@
     .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
     .btn-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
     .btn-dark { background: #2c3e50; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
 
     .form-group { margin-top: 15px; text-align: left; }
     .form-group label { display: block; font-weight: 800; margin-bottom: 6px; color: var(--gold-light); }
@@ -70,6 +70,7 @@
       background: #1e2738; padding: 4px; transition: all 0.2s ease;
     }
     .avatar-item.selected { border-color: var(--gold-light); background: rgba(241, 196, 15, 0.25); transform: scale(1.1); }
+    .avatar-item.taken { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
     .avatar-item svg { width: 100%; height: 100%; border-radius: 50%; }
 
     header {
@@ -127,11 +128,12 @@
       width: 80px; height: 100px; background: #1a2332; border-radius: 10px; border: 2px solid var(--card-border);
       display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-family: 'Fredoka One', cursive; color: white;
     }
+    .status-msg { font-size: 0.85rem; font-weight: 700; color: var(--gold-light); margin-top: 8px; }
   </style>
 </head>
 <body>
 
-  <!-- STEP 1: SCHRITT 1 - NUR RAUMNAME EINGEBEN -->
+  <!-- STEP 1: SCHRITT 1 - RAUMNAME EINGEBEN -->
   <div id="screen-room" class="screen-overlay">
     <div class="card-box">
       <h1>🎰 GAMING OLYMPIADE</h1>
@@ -140,16 +142,17 @@
         <label>Raumname (z.B. 4444):</label>
         <input type="text" id="input-room-name" class="form-control" placeholder="z.B. 4444" style="text-transform: uppercase;">
       </div>
-      <button class="btn btn-gold" style="margin-top: 25px;" onclick="enterRoom()">Raum Betreten ➡️</button>
+      <button class="btn btn-gold" style="margin-top: 20px;" onclick="enterRoom()">Raum Betreten ➡️</button>
+      <div id="room-status" class="status-msg"></div>
     </div>
   </div>
 
   <!-- STEP 2: WARTELOBBY & PROFIL-SETUP -->
   <div id="screen-setup" class="screen-overlay" style="display: none;">
-    <div class="card-box" style="max-width: 700px;">
+    <div class="card-box">
       <h1>🎮 WARTELOBBY</h1>
       <p style="color: var(--text-dim); font-weight: 700; margin-bottom: 15px;">
-        Raum-Code: <span id="setup-room-display" style="color: var(--gold);"></span> | Rolle: <span id="setup-role-display" style="color: var(--gold-light);"></span>
+        Raum: <span id="setup-room-display" style="color: var(--gold);"></span> | Rolle: <span id="setup-role-display" style="color: var(--gold-light);"></span>
       </p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
@@ -158,11 +161,11 @@
           <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
           <div class="form-group" style="margin-top:5px;">
             <label>Name:</label>
-            <input type="text" id="input-player-name" class="form-control" placeholder="Dein Name..." oninput="updateMyProfile()">
+            <input type="text" id="input-player-name" class="form-control" placeholder="Dein Name..." oninput="broadcastProfile()">
           </div>
           <div class="form-group">
             <label>Farbe:</label>
-            <input type="color" id="input-player-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="updateMyProfile()">
+            <input type="color" id="input-player-color" class="form-control" value="#3498db" style="height: 40px; cursor: pointer;" onchange="broadcastProfile()">
           </div>
           <div class="form-group">
             <label>Avatar wählen:</label>
@@ -170,24 +173,24 @@
           </div>
         </div>
 
-        <!-- Spielerliste & Host Admin Panel -->
+        <!-- Spielerliste -->
         <div class="card" style="background: #141c28; margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler im Raum</h3>
+            <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler (<span id="player-count">1</span>)</h3>
             <div id="setup-player-list" style="max-height: 180px; overflow-y: auto;"></div>
           </div>
 
-          <!-- Host Joker Setup -->
+          <!-- Host Config -->
           <div id="host-admin-box" class="host-only" style="display: none; margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 10px;">
-            <label style="color: var(--gold); font-size: 0.9rem; font-weight: 800;">Standard-Joker pro Spieler:</label>
+            <label style="color: var(--gold); font-size: 0.9rem; font-weight: 800;">Joker pro Spieler:</label>
             <div style="display: flex; gap: 10px; margin-top: 5px;">
               <div style="flex:1;">
-                <span style="font-size:0.75rem; color:var(--text-dim);">🔥 OP-Joker:</span>
-                <input type="number" id="cfg-joker-high" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomSettings()">
+                <span style="font-size:0.75rem; color:var(--text-dim);">🔥 OP:</span>
+                <input type="number" id="cfg-joker-high" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;">
               </div>
               <div style="flex:1;">
                 <span style="font-size:0.75rem; color:var(--text-dim);">⚖️ Ausgleich:</span>
-                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;" onchange="updateRoomSettings()">
+                <input type="number" id="cfg-joker-bal" class="form-control" value="1" min="0" max="5" style="padding:6px; text-align:center;">
               </div>
             </div>
           </div>
@@ -199,7 +202,7 @@
         <button class="btn btn-green" style="font-size: 1.2rem;" onclick="startOlympiade()">🚀 OLYMPIADE JETZT STARTEN!</button>
       </div>
       <div id="guest-wait-container">
-        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten darauf, dass der Host das Spiel startet...</p>
+        <p style="color: var(--gold); font-weight: 800; font-size: 1.1rem;">Warten auf Host-Start...</p>
       </div>
     </div>
   </div>
@@ -323,19 +326,15 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDemoOlympiadeConfigKey2026",
-      authDomain: "gaming-olympiade-2026.firebaseapp.com",
-      projectId: "gaming-olympiade-2026"
-    };
-    try { firebase.initializeApp(firebaseConfig); } catch(e) {}
-    const db = firebase.firestore();
+    let peer = null;
+    let hostConn = null;
+    let guestConns = [];
 
     const STATE = {
       role: 'player',
       roomCode: '',
-      myPlayerId: 'p_' + Math.random().toString(36).substring(2, 9),
-      myName: 'Spieler ' + Math.floor(Math.random()*900 + 100),
+      myPlayerId: 'p_' + Math.random().toString(36).substring(2, 7),
+      myName: 'Spieler ' + Math.floor(Math.random()*899 + 100),
       myAvatar: 0,
       myColor: '#3498db',
       score: 0,
@@ -344,7 +343,6 @@
     };
 
     const SPONGEBOB_AVATARS = Array.from({length: 25}, (_, i) => i);
-
     const GAMES = [
       { id: 'mc', name: 'Minecraft', hasBalance: true, desc: '40m Timer & Erz-Slot Bonus.', color: '#2ecc71' },
       { id: 'golf', name: 'Golf With Your Friends', hasBalance: true, desc: 'Slot zieht Extra-Schläge ab.', color: '#27ae60' },
@@ -359,7 +357,7 @@
     ];
 
     let activeGames = [...GAMES];
-    let allRoomPlayers = [];
+    let playersMap = {};
 
     function getFishAvatarSVG(id) {
       const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c', '#d35400', '#f1c40f'];
@@ -375,46 +373,73 @@
 
     window.onload = () => { renderLegend(); };
 
-    async function enterRoom() {
+    function enterRoom() {
       const code = document.getElementById('input-room-name').value.trim().toUpperCase();
-      if (!code) { alert('Bitte Raumname eingeben!'); return; }
+      if (!code) { alert('Bitte Raumnamen eingeben!'); return; }
 
       STATE.roomCode = code;
-      const roomRef = db.collection('rooms').doc(code);
+      document.getElementById('room-status').textContent = 'Verbinde mit Raum...';
 
-      try {
-        const roomDoc = await roomRef.get();
-        if (!roomDoc.exists) {
-          // Erster im Raum -> Host
-          STATE.role = 'host';
-          await roomRef.set({
-            createdAt: Date.now(),
-            status: 'setup',
-            jokerHighCfg: 1,
-            jokerBalCfg: 1,
-            spinTarget: 0,
-            currentGame: null,
-            timerSec: 0
+      const hostPeerId = 'olympiade_room_' + code;
+
+      // Versuche Host-Peer anzulegen
+      peer = new Peer(hostPeerId);
+
+      peer.on('open', (id) => {
+        // Erfolgreich als Host erstellt
+        STATE.role = 'host';
+        initHostMode();
+      });
+
+      peer.on('error', (err) => {
+        if (err.type === 'unavailable-id') {
+          // Raumnamen existiert bereits -> Verbindung als Gast aufbauen
+          peer = new Peer();
+          peer.on('open', () => {
+            STATE.role = 'player';
+            connectToHost(hostPeerId);
           });
         } else {
-          // Zweiter/Dritter im Raum -> Gast
-          STATE.role = 'player';
-          const data = roomDoc.data();
-          STATE.jokersHigh = data.jokerHighCfg || 1;
-          STATE.jokersBal = data.jokerBalCfg || 1;
+          document.getElementById('room-status').textContent = 'Verbindungsfehler. Bitte nochmals versuchen.';
         }
-      } catch (err) {
-        STATE.role = 'host';
-        await roomRef.set({ status: 'setup', createdAt: Date.now() }).catch(()=>{});
-      }
+      });
+    }
+
+    function initHostMode() {
+      playersMap[STATE.myPlayerId] = {
+        id: STATE.myPlayerId, name: STATE.myName, avatar: STATE.myAvatar, color: STATE.myColor, score: 0, jokersHigh: 1, jokersBal: 1
+      };
+
+      peer.on('connection', (conn) => {
+        guestConns.push(conn);
+        conn.on('data', (data) => handleIncomingData(data, conn));
+        conn.on('open', () => {
+          broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+        });
+      });
+
+      openSetupScreen();
+    }
+
+    function connectToHost(hostPeerId) {
+      hostConn = peer.connect(hostPeerId);
+      
+      hostConn.on('open', () => {
+        broadcastProfile();
+        openSetupScreen();
+      });
+
+      hostConn.on('data', (data) => handleIncomingData(data, hostConn));
+    }
+
+    function openSetupScreen() {
+      document.getElementById('screen-room').style.display = 'none';
+      document.getElementById('screen-setup').style.display = 'flex';
+      document.getElementById('setup-room-display').textContent = STATE.roomCode;
+      document.getElementById('setup-role-display').textContent = STATE.role === 'host' ? '👑 Host (Admin)' : '👤 Gast';
 
       document.getElementById('input-player-name').value = STATE.myName;
       document.getElementById('input-player-color').value = STATE.myColor;
-
-      document.getElementById('screen-room').style.display = 'none';
-      document.getElementById('screen-setup').style.display = 'flex';
-      document.getElementById('setup-room-display').textContent = code;
-      document.getElementById('setup-role-display').textContent = STATE.role === 'host' ? '👑 Host (Admin)' : '👤 Gast';
 
       if (STATE.role === 'host') {
         document.getElementById('host-start-container').style.display = 'block';
@@ -422,56 +447,73 @@
         document.getElementById('host-admin-box').style.display = 'block';
       }
 
-      // In Firestore registrieren
-      await roomRef.collection('players').doc(STATE.myPlayerId).set({
-        id: STATE.myPlayerId,
-        name: STATE.myName,
-        avatar: STATE.myAvatar,
-        color: STATE.myColor,
-        score: 0,
-        jokersHigh: STATE.jokersHigh,
-        jokersBal: STATE.jokersBal
-      });
-
-      startRealtimeSync();
+      renderSetupAvatarGrid();
+      renderSetupPlayersList();
     }
 
-    function startRealtimeSync() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').onSnapshot(snapshot => {
-        allRoomPlayers = [];
-        snapshot.forEach(doc => allRoomPlayers.push(doc.data()));
+    function broadcastProfile() {
+      STATE.myName = document.getElementById('input-player-name').value.trim() || 'Spieler';
+      STATE.myColor = document.getElementById('input-player-color').value;
+
+      const profileData = {
+        type: 'UPDATE_PROFILE',
+        player: {
+          id: STATE.myPlayerId, name: STATE.myName, avatar: STATE.myAvatar, color: STATE.myColor, score: STATE.score, jokersHigh: STATE.jokersHigh, jokersBal: STATE.jokersBal
+        }
+      };
+
+      if (STATE.role === 'host') {
+        playersMap[STATE.myPlayerId] = profileData.player;
+        broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+        renderSetupPlayersList();
+      } else if (hostConn && hostConn.open) {
+        hostConn.send(profileData);
+      }
+    }
+
+    function broadcastData(data) {
+      if (STATE.role === 'host') {
+        guestConns.forEach(conn => {
+          if (conn.open) conn.send(data);
+        });
+      } else if (hostConn && hostConn.open) {
+        hostConn.send(data);
+      }
+    }
+
+    function handleIncomingData(data, conn) {
+      if (data.type === 'UPDATE_PROFILE') {
+        playersMap[data.player.id] = data.player;
+        if (STATE.role === 'host') {
+          broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+          renderSetupPlayersList();
+        }
+      } else if (data.type === 'SYNC_PLAYERS') {
+        playersMap = {};
+        data.players.forEach(p => playersMap[p.id] = p);
+        renderSetupPlayersList();
         renderSetupAvatarGrid();
-        renderSetupPlayersList(allRoomPlayers);
-        renderScoreboard(allRoomPlayers);
-      });
-
-      db.collection('rooms').doc(STATE.roomCode).onSnapshot(doc => {
-        const data = doc.data();
-        if (!data) return;
-
-        if (data.status === 'active') {
-          enterMainApp();
+        renderScoreboard(Object.values(playersMap));
+      } else if (data.type === 'START_GAME') {
+        enterMainApp();
+      } else if (data.type === 'SPIN_WHEEL') {
+        animateWheelSpin(data.rot);
+      } else if (data.type === 'SET_CURRENT_GAME') {
+        const game = GAMES.find(g => g.id === data.gameId);
+        if (game) {
+          document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+          openJokerModal(game);
         }
-        if (data.jokerHighCfg !== undefined && STATE.role !== 'host') {
-          STATE.jokersHigh = data.jokerHighCfg;
-          STATE.jokersBal = data.jokerBalCfg;
-        }
-        if (data.spinTarget) animateWheelSpin(data.spinTarget);
-        if (data.currentGame) {
-          const game = GAMES.find(g => g.id === data.currentGame);
-          if (game) {
-            document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
-            openJokerModal(game);
-          }
-        }
-        if (data.timerSec !== undefined) updateTimerDisplay(data.timerSec);
-      });
+      } else if (data.type === 'UPDATE_TIMER') {
+        updateTimerDisplay(data.sec);
+      }
     }
 
     function renderSetupAvatarGrid() {
       const grid = document.getElementById('setup-avatar-grid');
       grid.innerHTML = '';
-      const taken = allRoomPlayers.filter(p => p.id !== STATE.myPlayerId).map(p => p.avatar);
+      const playersArr = Object.values(playersMap);
+      const taken = playersArr.filter(p => p.id !== STATE.myPlayerId).map(p => p.avatar);
 
       SPONGEBOB_AVATARS.forEach(id => {
         const isTaken = taken.includes(id);
@@ -482,17 +524,20 @@
         if (!isTaken) {
           div.onclick = () => {
             STATE.myAvatar = id;
-            updateMyProfile();
+            broadcastProfile();
+            renderSetupAvatarGrid();
           };
         }
         grid.appendChild(div);
       });
     }
 
-    function renderSetupPlayersList(players) {
+    function renderSetupPlayersList() {
       const list = document.getElementById('setup-player-list');
+      const playersArr = Object.values(playersMap);
+      document.getElementById('player-count').textContent = playersArr.length;
       list.innerHTML = '';
-      players.forEach(p => {
+      playersArr.forEach(p => {
         list.innerHTML += `
           <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:6px; padding:8px;">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -504,34 +549,18 @@
       });
     }
 
-    async function updateMyProfile() {
-      const name = document.getElementById('input-player-name').value.trim() || 'Spieler';
-      const color = document.getElementById('input-player-color').value;
+    function startOlympiade() {
+      const highCfg = parseInt(document.getElementById('cfg-joker-high').value) || 1;
+      const balCfg = parseInt(document.getElementById('cfg-joker-bal').value) || 1;
 
-      STATE.myName = name;
-      STATE.myColor = color;
-
-      await db.collection('rooms').doc(STATE.roomCode).collection('players').doc(STATE.myPlayerId).update({
-        name: STATE.myName,
-        avatar: STATE.myAvatar,
-        color: STATE.myColor,
-        jokersHigh: STATE.jokersHigh,
-        jokersBal: STATE.jokersBal
+      Object.values(playersMap).forEach(p => {
+        p.jokersHigh = highCfg;
+        p.jokersBal = balCfg;
       });
-    }
 
-    async function updateRoomSettings() {
-      if (STATE.role !== 'host') return;
-      const high = parseInt(document.getElementById('cfg-joker-high').value) || 1;
-      const bal = parseInt(document.getElementById('cfg-joker-bal').value) || 1;
-      await db.collection('rooms').doc(STATE.roomCode).update({
-        jokerHighCfg: high,
-        jokerBalCfg: bal
-      });
-    }
-
-    async function startOlympiade() {
-      await db.collection('rooms').doc(STATE.roomCode).update({ status: 'active' });
+      broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+      broadcastData({ type: 'START_GAME' });
+      enterMainApp();
     }
 
     function enterMainApp() {
@@ -550,6 +579,7 @@
 
       renderGamesList();
       drawWheel();
+      renderScoreboard(Object.values(playersMap));
     }
 
     function renderScoreboard(players) {
@@ -564,8 +594,8 @@
               <div>
                 <div class="player-name" style="color: ${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
                 <div style="display:flex; gap:4px; margin-top:2px;">
-                  <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 OP</span>
-                  <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal</span>
+                  <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 OP (${p.jokersHigh})</span>
+                  <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal (${p.jokersBal})</span>
                 </div>
               </div>
             </div>
@@ -599,7 +629,8 @@
 
     function triggerHostSpin() {
       const rot = 1440 + Math.floor(Math.random() * 360);
-      db.collection('rooms').doc(STATE.roomCode).update({ spinTarget: rot });
+      broadcastData({ type: 'SPIN_WHEEL', rot: rot });
+      animateWheelSpin(rot);
     }
 
     function animateWheelSpin(rot) {
@@ -611,7 +642,9 @@
         const index = Math.floor((360 - (rot % 360)) / seg) % activeGames.length;
         const game = activeGames[index];
         if (STATE.role === 'host') {
-          db.collection('rooms').doc(STATE.roomCode).update({ currentGame: game.id, spinTarget: 0 });
+          broadcastData({ type: 'SET_CURRENT_GAME', gameId: game.id });
+          document.getElementById('phase-title').textContent = `Aktuelles Spiel: ${game.name}`;
+          openJokerModal(game);
         }
       }, 4000);
     }
@@ -677,16 +710,18 @@
 
     function skipGame() {
       if (confirm('Spiel abbrechen?')) {
-        db.collection('rooms').doc(STATE.roomCode).update({ currentGame: null });
+        document.getElementById('phase-title').textContent = 'Spiel abgebrochen';
       }
     }
 
     function toggleTimer() {
-      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: 2400 });
+      broadcastData({ type: 'UPDATE_TIMER', sec: 2400 });
+      updateTimerDisplay(2400);
     }
 
     function resetTimer() {
-      db.collection('rooms').doc(STATE.roomCode).update({ timerSec: 0 });
+      broadcastData({ type: 'UPDATE_TIMER', sec: 0 });
+      updateTimerDisplay(0);
     }
 
     function updateTimerDisplay(sec) {
@@ -707,31 +742,25 @@
     }
 
     function openScoreEditModal() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').get().then(snap => {
-        const list = document.getElementById('score-edit-list');
-        list.innerHTML = '';
-        snap.forEach(doc => {
-          const p = doc.data();
-          list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span>${p.name}</span><input type="number" id="edit-score-${p.id}" class="form-control" style="width:100px; padding:6px;" value="${p.score}"></div>`;
-        });
-        openModal('score-modal');
+      const list = document.getElementById('score-edit-list');
+      list.innerHTML = '';
+      Object.values(playersMap).forEach(p => {
+        list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span>${p.name}</span><input type="number" id="edit-score-${p.id}" class="form-control" style="width:100px; padding:6px;" value="${p.score}"></div>`;
       });
+      openModal('score-modal');
     }
 
     function saveScores() {
-      db.collection('rooms').doc(STATE.roomCode).collection('players').get().then(snap => {
-        snap.forEach(doc => {
-          const p = doc.data();
-          const input = document.getElementById(`edit-score-${p.id}`);
-          if (input) {
-            const val = parseInt(input.value);
-            if (!isNaN(val)) {
-              db.collection('rooms').doc(STATE.roomCode).collection('players').doc(p.id).update({ score: val });
-            }
-          }
-        });
-        closeModal('score-modal');
+      Object.values(playersMap).forEach(p => {
+        const input = document.getElementById(`edit-score-${p.id}`);
+        if (input) {
+          const val = parseInt(input.value);
+          if (!isNaN(val)) p.score = val;
+        }
       });
+      broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+      renderScoreboard(Object.values(playersMap));
+      closeModal('score-modal');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
