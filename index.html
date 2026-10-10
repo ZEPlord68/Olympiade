@@ -35,7 +35,7 @@
     }
     .card-box {
       background: var(--card-bg); border: 3px solid var(--gold); border-radius: 20px;
-      padding: 30px; max-width: 650px; width: 100%; text-align: center;
+      padding: 30px; max-width: 680px; width: 100%; text-align: center;
       box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .card-box h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
@@ -65,7 +65,7 @@
       display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;
     }
     .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--gold-light); }
-    .app-container { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
+    .app-container { display: grid; grid-template-columns: 360px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
     @media (max-width: 1024px) { .app-container { grid-template-columns: 1fr; } }
 
     .card { background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
@@ -77,8 +77,9 @@
     }
     .player-name { font-weight: 800; font-size: 1.05rem; }
     .player-score { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--gold-light); }
-    .joker-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; background: #2c3e50; }
-    .joker-pill.active { background: var(--gold); color: #000; }
+    .joker-pill { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 900; background: #2c3e50; color: #bdc3c7; }
+    .joker-pill.active-op { background: linear-gradient(135deg, #e67e22, #f1c40f); color: #000; }
+    .joker-pill.active-bal { background: linear-gradient(135deg, #27ae60, #2ecc71); color: #fff; }
 
     .wheel-container { position: relative; width: 320px; height: 320px; margin: 0 auto 20px auto; }
     #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid var(--gold); transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1); }
@@ -104,6 +105,14 @@
       padding: 25px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;
     }
     .status-msg { font-size: 0.9rem; font-weight: 700; color: var(--gold-light); margin-top: 10px; }
+
+    /* Custom Stepper for Joker Setup */
+    .joker-stepper { display: flex; align-items: center; gap: 6px; }
+    .joker-btn {
+      width: 26px; height: 26px; border-radius: 6px; border: none; font-weight: 900;
+      background: #2c3e50; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .joker-btn:hover { background: var(--gold); color: black; }
   </style>
 </head>
 <body>
@@ -149,7 +158,7 @@
     </div>
   </div>
 
-  <!-- WARTELOBBY (Mit individueller Joker-Verteilung) -->
+  <!-- WARTELOBBY -->
   <div id="screen-setup" class="screen-overlay" style="display: none;">
     <div class="card-box" style="max-width: 750px;">
       <h1>🎮 WARTELOBBY</h1>
@@ -157,7 +166,7 @@
         Raum-Code: <span id="setup-room-code" style="color: var(--gold);"></span> | Rolle: <span id="setup-role-label" style="color: var(--gold-light);"></span>
       </p>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 15px; text-align: left; margin-bottom: 20px;">
         <div class="card" style="background: #141c28; margin-bottom:0;">
           <h3 style="color: var(--gold-light); margin-bottom: 10px;">Dein Profil</h3>
           <div class="form-group" style="margin-top:5px;">
@@ -171,8 +180,8 @@
         </div>
 
         <div class="card" style="background: #141c28; margin-bottom:0;">
-          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler & Joker-Zuteilung</h3>
-          <div id="setup-player-list" style="max-height: 220px; overflow-y: auto;"></div>
+          <h3 style="color: var(--gold-light); margin-bottom: 10px;">Mitspieler & Joker-Anzahl</h3>
+          <div id="setup-player-list" style="max-height: 250px; overflow-y: auto;"></div>
         </div>
       </div>
 
@@ -198,9 +207,10 @@
 
   <!-- MAIN APP BODY -->
   <div id="app-body" class="app-container" style="display: none;">
+    <!-- SIDEBAR LEFT (LINKS) -->
     <div class="sidebar">
       <div class="card">
-        <div class="card-title">🏆 Scoreboard</div>
+        <div class="card-title">🏆 Scoreboard & Joker</div>
         <div id="scoreboard-list"></div>
       </div>
 
@@ -213,6 +223,7 @@
       </div>
     </div>
 
+    <!-- MAIN CONTENT RIGHT -->
     <div class="main-content">
       <div class="phase-card">
         <div class="phase-title" id="phase-title">Bereit für den ersten Dreh!</div>
@@ -239,23 +250,23 @@
     </div>
   </div>
 
-  <!-- JOKER AUSWAHL MODAL (20 Sekunde Phase) -->
+  <!-- JOKER AUSWAHL MODAL -->
   <div class="modal-overlay" id="joker-modal">
     <div class="modal-box" style="text-align: center;">
       <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🃏 WÄHLE DEINEN JOKER</h2>
       <p id="joker-game-title" style="font-size: 1.3rem; font-weight: 800; color: #2ecc71; margin: 10px 0;"></p>
       <p style="color: var(--text-dim); margin-bottom: 15px;">Du hast noch: <span id="my-avail-op" style="color:var(--gold); font-weight:800;">0</span>x OP | <span id="my-avail-bal" style="color:var(--gold); font-weight:800;">0</span>x Ausgleich</p>
       
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-        <button class="btn btn-gold" onclick="submitJokerChoice('op')">🔥 OP-Joker einsetzen (Punkte verdoppeln)</button>
+      <div id="joker-btn-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <button class="btn btn-gold" id="btn-op-choice" onclick="submitJokerChoice('op')">🔥 OP-Joker einsetzen (Punkte verdoppeln)</button>
         <button class="btn btn-green" id="btn-balance-choice" onclick="submitJokerChoice('balance')">⚖️ Ausgleichs-Joker einsetzen</button>
-        <button class="btn btn-dark" onclick="submitJokerChoice('none')">❌ Ohne Joker spielen</button>
+        <button class="btn btn-dark" id="btn-none-choice" onclick="submitJokerChoice('none')">❌ Ohne Joker spielen</button>
       </div>
-      <div id="joker-wait-msg" style="font-weight: 800; color: var(--gold-light);"></div>
+      <div id="joker-wait-msg" style="font-weight: 800; color: var(--gold-light); font-size: 1.1rem; margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- REVEAL MODAL (Zeigt an, wer welchen Joker gewählt hat) -->
+  <!-- REVEAL MODAL -->
   <div class="modal-overlay" id="reveal-modal">
     <div class="modal-box" style="text-align: center;">
       <h2 style="font-family:'Fredoka One'; color: var(--gold-light); font-size: 2rem;">🔍 JOKER-REVEAL</h2>
@@ -359,9 +370,7 @@
         openSetupScreen();
       });
 
-      peer.on('error', () => {
-        alert('Fehler beim Erstellen des Raumes.');
-      });
+      peer.on('error', () => { alert('Fehler beim Erstellen des Raumes.'); });
     }
 
     function joinHostRoom() {
@@ -429,13 +438,17 @@
       }
     }
 
-    function updatePlayerJokers(pid, type, val) {
+    function adjustPlayerJokers(pid, type, delta) {
       if (STATE.role !== 'host') return;
-      const v = parseInt(val) || 0;
       if (playersMap[pid]) {
-        if (type === 'op') playersMap[pid].jokersHigh = v;
-        if (type === 'bal') playersMap[pid].jokersBal = v;
+        if (type === 'op') {
+          playersMap[pid].jokersHigh = Math.max(0, (playersMap[pid].jokersHigh || 0) + delta);
+        }
+        if (type === 'bal') {
+          playersMap[pid].jokersBal = Math.max(0, (playersMap[pid].jokersBal || 0) + delta);
+        }
         broadcastData({ type: 'SYNC_PLAYERS', players: Object.values(playersMap) });
+        renderSetupPlayersList();
       }
     }
 
@@ -500,24 +513,43 @@
       const playersArr = Object.values(playersMap);
       list.innerHTML = '';
       playersArr.forEach(p => {
-        let hostControls = '';
+        let jokerControls = '';
         if (STATE.role === 'host') {
-          hostControls = `
-            <div style="display:flex; gap:5px; margin-top:4px; align-items:center;">
-              <span style="font-size:0.7rem; color:var(--text-dim);">OP:</span>
-              <input type="number" value="${p.jokersHigh}" min="0" max="5" style="width:40px; padding:2px; text-align:center; background:#0f141d; color:#fff; border:1px solid #2c3e50; border-radius:4px;" onchange="updatePlayerJokers('${p.id}', 'op', this.value)">
-              <span style="font-size:0.7rem; color:var(--text-dim);">Bal:</span>
-              <input type="number" value="${p.jokersBal}" min="0" max="5" style="width:40px; padding:2px; text-align:center; background:#0f141d; color:#fff; border:1px solid #2c3e50; border-radius:4px;" onchange="updatePlayerJokers('${p.id}', 'bal', this.value)">
+          jokerControls = `
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px; background:#0a0e17; padding:6px 8px; border-radius:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; color:#f1c40f; font-weight:800;">🔥 OP-Joker:</span>
+                <div class="joker-stepper">
+                  <button class="joker-btn" onclick="adjustPlayerJokers('${p.id}', 'op', -1)">-</button>
+                  <span style="font-weight:900; min-width:18px; text-align:center;">${p.jokersHigh || 0}</span>
+                  <button class="joker-btn" onclick="adjustPlayerJokers('${p.id}', 'op', 1)">+</button>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; color:#2ecc71; font-weight:800;">⚖️ Ausgleich:</span>
+                <div class="joker-stepper">
+                  <button class="joker-btn" onclick="adjustPlayerJokers('${p.id}', 'bal', -1)">-</button>
+                  <span style="font-weight:900; min-width:18px; text-align:center;">${p.jokersBal || 0}</span>
+                  <button class="joker-btn" onclick="adjustPlayerJokers('${p.id}', 'bal', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          jokerControls = `
+            <div style="display:flex; gap:8px; margin-top:4px;">
+              <span class="joker-pill active-op">🔥 OP: ${p.jokersHigh || 0}</span>
+              <span class="joker-pill active-bal">⚖️ Bal: ${p.jokersBal || 0}</span>
             </div>
           `;
         }
 
         list.innerHTML += `
-          <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:6px; padding:8px; display:block;">
+          <div class="player-card" style="border-left: 4px solid ${p.color || '#3498db'}; margin-bottom:8px; padding:10px; display:block;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div class="player-name" style="font-size:0.95rem; color:${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
+              <div class="player-name" style="font-size:1rem; color:${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
             </div>
-            ${hostControls}
+            ${jokerControls}
           </div>
         `;
       });
@@ -557,9 +589,9 @@
           <div class="player-card" style="border-left: 5px solid ${p.color || '#3498db'};">
             <div>
               <div class="player-name" style="color: ${p.color || '#fff'};">${p.name} ${p.id === STATE.myPlayerId ? '(Du)' : ''}</div>
-              <div style="display:flex; gap:4px; margin-top:2px;">
-                <span class="joker-pill ${p.jokersHigh > 0 ? 'active' : ''}">🔥 OP (${p.jokersHigh})</span>
-                <span class="joker-pill ${p.jokersBal > 0 ? 'active' : ''}">⚖️ Bal (${p.jokersBal})</span>
+              <div style="display:flex; gap:6px; margin-top:4px;">
+                <span class="joker-pill ${p.jokersHigh > 0 ? 'active-op' : ''}">🔥 OP (${p.jokersHigh || 0})</span>
+                <span class="joker-pill ${p.jokersBal > 0 ? 'active-bal' : ''}">⚖️ Bal (${p.jokersBal || 0})</span>
               </div>
             </div>
             <div class="player-score">${p.score} Pkt</div>
@@ -613,9 +645,9 @@
     }
 
     function openJokerModal(game) {
-      document.getElementById('joker-game-title').textContent = game.name;
-      document.getElementById('my-avail-op').textContent = STATE.jokersHigh;
-      document.getElementById('my-avail-bal').textContent = STATE.jokersBal;
+      document.getElementById('joker-game-title').textContent = `${game.hasBalance ? '🟢' : '🔴'} ${game.name}`;
+      document.getElementById('my-avail-op').textContent = STATE.jokersHigh || 0;
+      document.getElementById('my-avail-bal').textContent = STATE.jokersBal || 0;
       
       const balBtn = document.getElementById('btn-balance-choice');
       if (game.hasBalance) {
@@ -623,6 +655,11 @@
       } else {
         balBtn.style.display = 'none';
       }
+
+      document.getElementById('btn-op-choice').disabled = false;
+      document.getElementById('btn-balance-choice').disabled = false;
+      document.getElementById('btn-none-choice').disabled = false;
+
       document.getElementById('joker-wait-msg').textContent = '';
       openModal('joker-modal');
     }
@@ -634,8 +671,13 @@
       if (type === 'op') STATE.jokersHigh--;
       if (type === 'balance') STATE.jokersBal--;
 
+      document.getElementById('btn-op-choice').disabled = true;
+      document.getElementById('btn-balance-choice').disabled = true;
+      document.getElementById('btn-none-choice').disabled = true;
+
+      document.getElementById('joker-wait-msg').textContent = '✅ Gewählt! Warte auf andere Spieler...';
+
       broadcastData({ type: 'JOKER_CHOICE', playerId: STATE.myPlayerId, choice: type });
-      document.getElementById('joker-wait-msg').textContent = '✅ Gewählt! Warten auf andere Spieler...';
 
       if (STATE.role === 'host') {
         roundChoices[STATE.myPlayerId] = type;
